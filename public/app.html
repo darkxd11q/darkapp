@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#111b21"/>
+<title>ChatApp</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:#111b21;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#e9edef;}
+#app{display:flex;height:100dvh;overflow:hidden;}
+
+/* SIDEBAR */
+#sidebar{width:350px;min-width:350px;display:flex;flex-direction:column;
+  background:#111b21;border-right:1px solid #2a3942;transition:transform .25s;z-index:10;position:relative;}
+#sb-header{background:#202c33;padding:12px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+#my-av-btn{width:42px;height:42px;border-radius:50%;border:2px solid transparent;
+  display:flex;align-items:center;justify-content:center;font-size:1.25rem;cursor:pointer;flex-shrink:0;
+  transition:border-color .2s;position:relative;overflow:hidden;}
+#my-av-btn:hover{border-color:#00a884;}
+#my-av-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+#my-av-btn .pencil{position:absolute;bottom:-1px;right:-1px;width:16px;height:16px;
+  border-radius:50%;background:#00a884;font-size:.5rem;display:flex;align-items:center;justify-content:center;}
+#my-display-name{flex:1;font-size:.93rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ib{background:none;border:none;color:#aebac1;font-size:1.2rem;
+  cursor:pointer;padding:8px;border-radius:50%;transition:background .15s;}
+.ib:hover{background:#2a3942;}
+
+#sb-tabs{display:flex;background:#111b21;border-bottom:1px solid #2a3942;flex-shrink:0;}
+.stab{flex:1;padding:13px 0;background:none;border:none;color:#8696a0;
+  font-size:.8rem;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.stab.on{color:#00a884;border-color:#00a884;}
+.tbadge{background:#00a884;color:#fff;font-size:.62rem;font-weight:700;
+  min-width:15px;height:15px;border-radius:8px;display:inline-flex;
+  align-items:center;justify-content:center;padding:0 3px;margin-left:4px;}
+
+#search-wrap{padding:9px 12px;flex-shrink:0;}
+#search-input{width:100%;background:#202c33;border:1px solid #2a3942;border-radius:8px;
+  padding:9px 13px;color:#e9edef;font-size:.88rem;outline:none;}
+#search-input::placeholder{color:#8696a0;}
+.list-area{flex:1;overflow-y:auto;}
+.list-area::-webkit-scrollbar{width:4px;}
+.list-area::-webkit-scrollbar-thumb{background:#2a3942;border-radius:2px;}
+.empty-list{padding:36px 20px;text-align:center;color:#8696a0;font-size:.85rem;line-height:1.7;}
+
+.ci{display:flex;align-items:center;gap:11px;padding:11px 14px;cursor:pointer;
+  border-bottom:1px solid #1c2931;transition:background .15s;}
+.ci:hover,.ci.on{background:#202c33;}
+.ci-av{width:46px;height:46px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:1.3rem;position:relative;overflow:hidden;}
+.ci-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.ci-av .od{position:absolute;bottom:1px;right:1px;width:11px;height:11px;
+  border-radius:50%;background:#00a884;border:2px solid #111b21;}
+.ci-info{flex:1;min-width:0;}
+.ci-name{font-size:.92rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ci-prev{color:#8696a0;font-size:.77rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.ci-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.ci-time{color:#8696a0;font-size:.7rem;}
+.ci-badge{background:#00a884;color:#fff;font-size:.63rem;font-weight:700;
+  min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;}
+.pend-acts{display:flex;gap:6px;margin-top:5px;}
+.pab{padding:4px 10px;border-radius:6px;border:none;font-size:.74rem;cursor:pointer;}
+.pab.acc{background:#00a884;color:#fff;}
+.pab.rej{background:#2a3942;color:#8696a0;}
+.group-badge{background:#7c3aed;color:#fff;font-size:.58rem;padding:1px 5px;border-radius:4px;margin-left:4px;}
+
+/* CHAT PANEL */
+#chat-panel{flex:1;display:flex;flex-direction:column;background:#0b141a;position:relative;min-width:0;}
+#chat-panel::before{content:"";position:absolute;inset:0;opacity:.35;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23182229'%3E%3Cpath d='M50 50v-6h-2v6h-6v2h6v6h2v-6h6v-2h-6zm0-40V4h-2v6h-6v2h6v6h2V6h4V4h-4zM10 50v-6H8v6H2v2h6v6h2v-6h6v-2h-6zM10 10V4H8v6H2v2h6v6h2V6h4V4h-4z'/%3E%3C/g%3E%3C/svg%3E");}
+#no-chat{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#8696a0;text-align:center;padding:32px;position:relative;z-index:1;}
+#no-chat .nci{font-size:5rem;opacity:.2;margin-bottom:16px;}
+
+#chat-header{background:#202c33;padding:11px 14px;display:flex;align-items:center;gap:11px;
+  z-index:10;position:relative;flex-shrink:0;}
+#back-btn{display:none;background:none;border:none;color:#aebac1;font-size:1.6rem;cursor:pointer;padding-right:4px;}
+#ch-av{width:40px;height:40px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:1.1rem;cursor:pointer;overflow:hidden;}
+#ch-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+#ch-info{flex:1;min-width:0;cursor:pointer;}
+#ch-name{font-size:.93rem;font-weight:600;}
+#ch-sub{color:#8696a0;font-size:.76rem;margin-top:2px;}
+.call-icon-btn{background:none;border:none;color:#aebac1;font-size:1.25rem;
+  cursor:pointer;padding:8px;border-radius:50%;transition:background .15s;}
+.call-icon-btn:hover{background:#2a3942;}
+
+#messages{flex:1;overflow-y:auto;padding:13px 15px;display:flex;flex-direction:column;gap:2px;
+  position:relative;z-index:1;scroll-behavior:smooth;}
+#messages::-webkit-scrollbar{width:4px;}
+#messages::-webkit-scrollbar-thumb{background:#2a3942;border-radius:2px;}
+.dsep{text-align:center;margin:10px 0;color:#8696a0;font-size:.7rem;}
+.dsep span{background:#182229;padding:3px 10px;border-radius:6px;}
+.mr{display:flex;margin-bottom:1px;}
+.mr.mine{justify-content:flex-end;}
+.mr.theirs{justify-content:flex-start;}
+.msg-sender-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+  justify-content:center;font-size:.8rem;margin-right:6px;align-self:flex-end;overflow:hidden;}
+.msg-sender-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.msg-sender-name{font-size:.7rem;color:#00a884;margin-bottom:2px;font-weight:500;}
+.bbl{max-width:72%;padding:7px 11px 5px;border-radius:8px;word-break:break-word;}
+.mine .bbl{background:#005c4b;border-bottom-right-radius:2px;}
+.theirs .bbl{background:#202c33;border-bottom-left-radius:2px;border:1px solid #2a3942;}
+.bbl .txt{font-size:.91rem;line-height:1.5;}
+.bbl .sticker-img{max-width:150px;max-height:150px;border-radius:8px;display:block;}
+.bbl .bt{font-size:.66rem;color:#8696a0;text-align:right;margin-top:2px;}
+.mine .bbl .bt{color:#8baebb;}
+#typing-bar{padding:3px 15px;color:#8696a0;font-size:.77rem;min-height:22px;position:relative;z-index:1;flex-shrink:0;}
+
+#input-bar{background:#202c33;padding:8px 12px;display:flex;align-items:flex-end;gap:9px;
+  position:relative;z-index:10;flex-shrink:0;}
+.input-action-btn{background:none;border:none;color:#8696a0;font-size:1.3rem;cursor:pointer;
+  padding:5px;border-radius:50%;transition:background .15s;flex-shrink:0;}
+.input-action-btn:hover{background:#2a3942;color:#e9edef;}
+#msg-input{flex:1;background:#2a3942;border:none;border-radius:22px;padding:10px 16px;
+  color:#e9edef;font-size:.92rem;outline:none;resize:none;max-height:110px;overflow-y:auto;line-height:1.4;}
+#msg-input::placeholder{color:#8696a0;}
+#send-btn{background:#00a884;border:none;width:44px;height:44px;border-radius:50%;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;transition:background .15s;}
+#send-btn:hover{background:#02906f;}
+
+/* EMOJI PICKER */
+#emoji-picker-popup{position:absolute;bottom:70px;left:10px;z-index:200;
+  background:#1a2e3a;border:1px solid #2a3942;border-radius:14px;
+  width:320px;max-height:380px;display:none;flex-direction:column;overflow:hidden;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);}
+#emoji-picker-popup.open{display:flex;}
+.ep-search{padding:8px 10px;flex-shrink:0;background:#182229;border-bottom:1px solid #2a3942;}
+.ep-search input{width:100%;background:#2a3942;border:none;border-radius:8px;
+  padding:7px 12px;color:#e9edef;font-size:.85rem;outline:none;}
+.ep-cats{display:flex;gap:2px;padding:6px 8px;flex-shrink:0;border-bottom:1px solid #2a3942;flex-wrap:wrap;}
+.ep-cat{background:none;border:none;font-size:1rem;cursor:pointer;padding:4px 6px;border-radius:6px;
+  color:#8696a0;transition:background .15s;}
+.ep-cat:hover,.ep-cat.on{background:#2a3942;color:#e9edef;}
+.ep-grid{flex:1;overflow-y:auto;padding:8px;display:flex;flex-wrap:wrap;gap:2px;}
+.ep-grid::-webkit-scrollbar{width:3px;}
+.ep-grid::-webkit-scrollbar-thumb{background:#2a3942;}
+.ep-em{font-size:1.5rem;padding:5px;border-radius:6px;cursor:pointer;border:none;background:none;
+  transition:background .15s;line-height:1;}
+.ep-em:hover{background:#2a3942;}
+
+/* STICKER PICKER */
+#sticker-picker-popup{position:absolute;bottom:70px;left:50px;z-index:200;
+  background:#1a2e3a;border:1px solid #2a3942;border-radius:14px;
+  width:320px;display:none;flex-direction:column;overflow:hidden;
+  box-shadow:0 8px 30px rgba(0,0,0,.5);}
+#sticker-picker-popup.open{display:flex;}
+.sp-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid #2a3942;flex-shrink:0;}
+.sp-head span{font-size:.9rem;font-weight:600;}
+.sp-create-btn{background:#00a884;border:none;color:#fff;border-radius:7px;padding:5px 11px;
+  font-size:.78rem;cursor:pointer;}
+.sp-grid{padding:12px;display:flex;flex-wrap:wrap;gap:10px;max-height:250px;overflow-y:auto;}
+.sp-item{position:relative;cursor:pointer;}
+.sp-item img{width:72px;height:72px;object-fit:contain;border-radius:10px;
+  background:#202c33;border:2px solid transparent;transition:border-color .15s;}
+.sp-item:hover img{border-color:#00a884;}
+.sp-del{position:absolute;top:-5px;right:-5px;background:#f13838;color:#fff;
+  border:none;border-radius:50%;width:18px;height:18px;font-size:.6rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;}
+.sp-empty{padding:24px;text-align:center;color:#8696a0;font-size:.85rem;width:100%;}
+
+/* CALL OVERLAY */
+#call-overlay{position:fixed;inset:0;z-index:200;background:#0d1f2d;display:none;flex-direction:column;}
+#call-overlay.show{display:flex;}
+#call-info-bar{background:rgba(10,25,40,.9);padding:14px 20px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:5;}
+#call-name-bar{color:#fff;font-size:1rem;font-weight:600;}
+#call-status-bar{color:#aebac1;font-size:.82rem;}
+#video-area{flex:1;position:relative;background:#0a1929;overflow:hidden;}
+#remote-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#0a1929;display:none;}
+#remote-video.show{display:block;}
+#screen-share-video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#0a1929;display:none;z-index:3;}
+#screen-share-video.show{display:block;}
+#audio-avatar-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+#remote-av-circle{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:3.4rem;overflow:hidden;
+  box-shadow:0 0 0 16px rgba(255,255,255,.06),0 0 0 32px rgba(255,255,255,.03);}
+#remote-av-circle img{width:100%;height:100%;object-fit:cover;}
+.call-rname{color:#fff;font-size:1.6rem;font-weight:600;}
+.call-stat{color:#aebac1;font-size:.88rem;}
+#local-video{position:absolute;bottom:16px;right:16px;width:110px;height:155px;border-radius:12px;
+  object-fit:cover;background:#1a2e3a;border:2px solid #2a3942;display:none;z-index:5;
+  box-shadow:0 4px 20px rgba(0,0,0,.5);}
+#local-video.show{display:block;}
+
+#call-controls{background:rgba(10,25,40,.95);padding:20px 32px 36px;
+  display:flex;justify-content:center;align-items:center;gap:20px;flex-shrink:0;flex-wrap:wrap;}
+.cbtn{width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s,box-shadow .15s;position:relative;}
+.cbtn svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.cbtn:active{transform:scale(.88);}
+.cbtn-label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);
+  color:#8696a0;font-size:.6rem;white-space:nowrap;letter-spacing:.3px;}
+#cbtn-mute{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);}
+#cbtn-mute:hover{background:rgba(255,255,255,.22);}
+#cbtn-mute.muted{background:#c0392b;}
+#cbtn-vid{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);}
+#cbtn-vid:hover{background:rgba(255,255,255,.22);}
+#cbtn-vid.off{background:#c0392b;}
+#cbtn-flip{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);}
+#cbtn-flip:hover{background:rgba(255,255,255,.22);}
+#cbtn-screen{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);}
+#cbtn-screen:hover{background:rgba(255,255,255,.22);}
+#cbtn-screen.active{background:#00a884;}
+#cbtn-chat{background:rgba(255,255,255,.15);backdrop-filter:blur(8px);}
+#cbtn-chat:hover{background:rgba(255,255,255,.22);}
+#cbtn-chat.active{background:#00a884;}
+#cbtn-end{background:#c0392b;width:66px;height:66px;box-shadow:0 4px 20px rgba(192,57,43,.5);}
+#cbtn-end:hover{background:#e74c3c;}
+
+/* IN-CALL CHAT */
+#incall-chat{position:absolute;bottom:0;left:0;right:0;height:60%;background:rgba(13,31,45,.97);
+  backdrop-filter:blur(16px);display:flex;flex-direction:column;transform:translateY(100%);
+  transition:transform .3s ease;z-index:10;border-radius:16px 16px 0 0;border-top:1px solid #2a3942;}
+#incall-chat.open{transform:translateY(0);}
+#incall-chat-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid #2a3942;flex-shrink:0;}
+#incall-chat-name{color:#e9edef;font-size:.93rem;font-weight:600;}
+#incall-chat-close{background:none;border:none;color:#8696a0;font-size:1.2rem;cursor:pointer;padding:4px 8px;}
+#incall-messages{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:4px;}
+.icm-row{display:flex;}
+.icm-row.mine{justify-content:flex-end;}.icm-row.theirs{justify-content:flex-start;}
+.icm-bub{max-width:78%;padding:7px 11px 5px;border-radius:8px;word-break:break-word;}
+.mine .icm-bub{background:#005c4b;border-bottom-right-radius:2px;}
+.theirs .icm-bub{background:#2a3942;border-bottom-left-radius:2px;}
+.icm-bub .icm-txt{font-size:.88rem;color:#e9edef;line-height:1.5;}
+.icm-bub .icm-t{font-size:.63rem;color:#8baebb;text-align:right;margin-top:2px;}
+#incall-input-row{display:flex;gap:9px;padding:10px 12px;background:rgba(32,44,51,.95);
+  border-top:1px solid #2a3942;flex-shrink:0;}
+#incall-msg-input{flex:1;background:#2a3942;border:none;border-radius:20px;
+  padding:9px 15px;color:#e9edef;font-size:.9rem;outline:none;}
+#incall-send-btn{background:#00a884;border:none;width:38px;height:38px;border-radius:50%;
+  cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* INCOMING CALL */
+#incoming-call{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:300;
+  background:#202c33;border-radius:20px;padding:20px 28px;text-align:center;min-width:300px;
+  box-shadow:0 12px 50px rgba(0,0,0,.7);display:none;animation:slideUp .3s ease;}
+@keyframes slideUp{from{transform:translateX(-50%) translateY(20px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+#incoming-call.show{display:block;}
+#inc-caller-av{width:64px;height:64px;border-radius:50%;margin:0 auto 10px;
+  display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden;}
+#inc-caller-av img{width:100%;height:100%;object-fit:cover;}
+#inc-name{color:#e9edef;font-size:1.1rem;font-weight:600;margin-bottom:3px;}
+#inc-type{color:#8696a0;font-size:.8rem;margin-bottom:18px;}
+.inc-btns{display:flex;gap:32px;justify-content:center;}
+.incb{width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;font-size:1.5rem;
+  display:flex;align-items:center;justify-content:center;transition:transform .15s;}
+.incb:active{transform:scale(.88);}
+
+/* MODALS */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:150;
+  display:flex;align-items:center;justify-content:center;padding:16px;}
+.mo-box{background:#202c33;border-radius:16px;width:min(480px,100%);max-height:90dvh;overflow-y:auto;}
+.mo-head{padding:18px 22px 14px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid #2a3942;position:sticky;top:0;background:#202c33;z-index:1;}
+.mo-head h2{font-size:1.05rem;}
+.mo-close{background:none;border:none;color:#8696a0;font-size:1.4rem;cursor:pointer;}
+.mo-body{padding:22px;}
+.av-picker{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:20px;}
+.big-av{width:86px;height:86px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:2.7rem;overflow:hidden;position:relative;cursor:pointer;}
+.big-av img{width:100%;height:100%;object-fit:cover;}
+.big-av-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;font-size:1.3rem;}
+.big-av:hover .big-av-overlay{opacity:1;}
+.fl{color:#8696a0;font-size:.72rem;text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;margin-top:14px;}
+.emoji-row,.color-row{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;}
+.eo{font-size:1.45rem;padding:5px;border-radius:7px;cursor:pointer;border:2px solid transparent;background:none;transition:border-color .15s;}
+.eo:hover,.eo.sel{border-color:#00a884;}
+.co{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .15s;}
+.co:hover,.co.sel{border-color:#fff;transform:scale(1.15);}
+.fi{width:100%;background:#2a3942;border:2px solid transparent;border-radius:9px;
+  padding:11px 13px;color:#e9edef;font-size:.93rem;outline:none;transition:border-color .2s;}
+.fi:focus{border-color:#00a884;}
+.phone-box{background:#2a3942;border-radius:9px;padding:11px 13px;display:flex;align-items:center;justify-content:space-between;}
+.phone-box span{color:#8696a0;font-size:.88rem;}
+.copy-b{background:none;border:none;color:#00a884;font-size:.78rem;cursor:pointer;padding:2px 8px;border-radius:5px;}
+.save-b{width:100%;margin-top:18px;padding:12px;border-radius:9px;border:none;background:#00a884;
+  color:#fff;font-size:.93rem;font-weight:600;cursor:pointer;}
+.save-b:hover{background:#02906f;}
+.ph-row{display:flex;gap:7px;}
+.ph-pre{background:#2a3942;border-radius:9px;padding:11px 12px;color:#8696a0;font-size:.88rem;display:flex;align-items:center;white-space:nowrap;}
+#friend-phone{flex:1;background:#2a3942;border:2px solid transparent;border-radius:9px;
+  padding:11px 13px;color:#e9edef;font-size:.93rem;outline:none;transition:border-color .2s;}
+#friend-phone:focus{border-color:#00a884;}
+.srch-b{padding:11px 16px;background:#00a884;border:none;border-radius:9px;color:#fff;font-size:.88rem;cursor:pointer;}
+.found-box{background:#2a3942;border-radius:11px;padding:14px;display:flex;align-items:center;gap:13px;margin-top:14px;flex-wrap:wrap;}
+.found-av{width:48px;height:48px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;overflow:hidden;}
+.found-av img{width:100%;height:100%;object-fit:cover;}
+.found-nm{font-size:.92rem;font-weight:600;}
+.found-ph{color:#8696a0;font-size:.78rem;margin-top:2px;}
+.add-b{padding:8px 15px;background:#00a884;border:none;border-radius:7px;color:#fff;font-size:.83rem;cursor:pointer;margin-left:auto;}
+.add-b:disabled{background:#2a3942;color:#8696a0;cursor:default;}
+.pv-center{text-align:center;padding:8px 0 12px;}
+.pv-av{width:78px;height:78px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:2.3rem;overflow:hidden;}
+.pv-av img{width:100%;height:100%;object-fit:cover;}
+.pv-name{font-size:1.05rem;font-weight:600;margin-bottom:3px;}
+.pv-phone{color:#8696a0;font-size:.83rem;margin-bottom:5px;}
+.pv-bio{color:#8696a0;font-size:.83rem;font-style:italic;}
+.pv-acts{display:flex;gap:9px;justify-content:center;margin-top:16px;flex-wrap:wrap;}
+.pvb{padding:9px 18px;border-radius:8px;border:none;font-size:.85rem;cursor:pointer;}
+.pvb.pri{background:#00a884;color:#fff;}
+.pvb.dan{background:#2a3942;color:#f13838;}
+
+/* Group modal extras */
+.member-check-list{max-height:200px;overflow-y:auto;background:#2a3942;border-radius:9px;padding:8px;}
+.mcl-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;cursor:pointer;}
+.mcl-item:hover{background:#1a2e38;}
+.mcl-item input[type=checkbox]{accent-color:#00a884;width:16px;height:16px;cursor:pointer;}
+.mcl-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;overflow:hidden;}
+.mcl-av img{width:100%;height:100%;object-fit:cover;}
+.mcl-name{font-size:.88rem;}
+
+/* Sticker creator */
+#sticker-canvas-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;}
+#sticker-canvas{border:2px dashed #2a3942;border-radius:12px;background:#182229;cursor:crosshair;}
+.sc-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;}
+.sc-tool{padding:6px 12px;background:#2a3942;border:none;border-radius:7px;color:#e9edef;font-size:.8rem;cursor:pointer;transition:background .15s;}
+.sc-tool:hover,.sc-tool.on{background:#00a884;}
+.sc-color{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;}
+.sc-color.sel{border-color:#fff;}
+input[type=range].sc-range{accent-color:#00a884;}
+
+/* Notification banner */
+#notif-banner{position:fixed;top:16px;right:16px;z-index:999;background:#202c33;border-radius:12px;
+  padding:12px 16px;max-width:300px;box-shadow:0 6px 24px rgba(0,0,0,.5);display:none;cursor:pointer;
+  border-left:4px solid #00a884;animation:notifSlide .3s ease;}
+@keyframes notifSlide{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+#notif-banner.show{display:flex;gap:10px;align-items:flex-start;}
+.nb-av{width:36px;height:36px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem;overflow:hidden;}
+.nb-av img{width:100%;height:100%;object-fit:cover;}
+.nb-text .nb-name{font-size:.88rem;font-weight:600;color:#e9edef;}
+.nb-text .nb-msg{font-size:.8rem;color:#8696a0;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;}
+
+/* MOBILE */
+@media(max-width:640px){
+  #sidebar{width:100%;min-width:100%;position:absolute;inset:0;}
+  #sidebar.hidden{transform:translateX(-100%);}
+  #chat-panel{position:absolute;inset:0;transform:translateX(100%);}
+  #chat-panel.show{transform:translateX(0);}
+  #back-btn{display:block !important;}
+  #emoji-picker-popup,#sticker-picker-popup{width:calc(100vw - 20px);left:10px;}
+}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#2a3942;border-radius:3px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div id="sb-header">
+      <button id="my-av-btn"><span id="my-av-emoji">😊</span><span class="pencil">✏️</span></button>
+      <span id="my-display-name">...</span>
+      <button class="ib" id="create-group-btn" title="Grup Oluştur">👥</button>
+      <button class="ib" id="add-friend-btn" title="Arkadaş Ekle">➕</button>
+      <button class="ib" id="logout-btn" title="Çıkış">🚪</button>
+    </div>
+    <div id="sb-tabs">
+      <button class="stab on" data-tab="chats">💬 Sohbetler</button>
+      <button class="stab" data-tab="friends">👥 Arkadaşlar <span id="pend-badge" class="tbadge" style="display:none"></span></button>
+    </div>
+    <div id="tab-chats" style="display:flex;flex-direction:column;flex:1;overflow:hidden;">
+      <div id="search-wrap"><input type="text" id="search-input" placeholder="Ara..."/></div>
+      <div class="list-area" id="chats-list"><div class="empty-list">Henüz sohbet yok.<br/>Arkadaş ekleyip başla! ➕</div></div>
+    </div>
+    <div id="tab-friends" style="display:none;flex:1;overflow:hidden;">
+      <div class="list-area" id="friends-list"><div class="empty-list">Henüz arkadaşın yok.<br/>Telefon numarasıyla ekle.</div></div>
+    </div>
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div id="chat-panel">
+    <div id="no-chat"><div class="nci">💬</div><p>Sohbet için bir arkadaş veya grup seç</p></div>
+    <div id="chat-header" style="display:none;">
+      <button id="back-btn">‹</button>
+      <div id="ch-av"></div>
+      <div id="ch-info"><div id="ch-name"></div><div id="ch-sub"></div></div>
+      <button class="call-icon-btn" id="audio-call-btn" title="Sesli Ara">📞</button>
+      <button class="call-icon-btn" id="video-call-btn" title="Görüntülü Ara">🎥</button>
+    </div>
+    <div id="messages" style="display:none;"></div>
+    <div id="typing-bar"></div>
+    <div id="input-bar" style="display:none;">
+      <button class="input-action-btn" id="emoji-btn" title="Emoji">😊</button>
+      <button class="input-action-btn" id="sticker-btn" title="Sticker">🎭</button>
+      <textarea id="msg-input" placeholder="Mesaj yaz..." rows="1"></textarea>
+      <button id="send-btn">➤</button>
+    </div>
+    <!-- Emoji Picker -->
+    <div id="emoji-picker-popup">
+      <div class="ep-search"><input type="text" id="ep-search" placeholder="Emoji ara..."/></div>
+      <div class="ep-cats" id="ep-cats"></div>
+      <div class="ep-grid" id="ep-grid"></div>
+    </div>
+    <!-- Sticker Picker -->
+    <div id="sticker-picker-popup">
+      <div class="sp-head">
+        <span>🎭 Stickerlarım</span>
+        <button class="sp-create-btn" id="open-sticker-create">+ Sticker Oluştur</button>
+      </div>
+      <div class="sp-grid" id="sp-grid"><div class="sp-empty">Henüz sticker yok.<br/>Oluştur ve gönder!</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INCOMING CALL -->
+<div id="incoming-call">
+  <div id="inc-caller-av"></div>
+  <div id="inc-name"></div>
+  <div id="inc-type"></div>
+  <div class="inc-btns">
+    <button class="incb" id="inc-reject" style="background:#f13838;">📵</button>
+    <button class="incb" id="inc-accept" style="background:#00a884;">📞</button>
+  </div>
+</div>
+
+<!-- CALL OVERLAY -->
+<div id="call-overlay">
+  <div id="call-info-bar">
+    <span id="call-name-bar"></span>
+    <span id="call-status-bar">Bağlanıyor...</span>
+  </div>
+  <div id="video-area">
+    <video id="remote-video" autoplay playsinline></video>
+    <video id="screen-share-video" autoplay playsinline></video>
+    <div id="audio-avatar-center">
+      <div id="remote-av-circle"></div>
+      <div class="call-rname" id="call-rname"></div>
+      <div class="call-stat" id="call-stat">Bağlanıyor...</div>
+    </div>
+    <video id="local-video" autoplay playsinline muted></video>
+  </div>
+  <div id="call-controls">
+    <button class="cbtn" id="cbtn-mute">
+      <svg id="icon-mic-on" viewBox="0 0 24 24"><path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+      <svg id="icon-mic-off" viewBox="0 0 24 24" style="display:none"><path d="M1 1l22 22M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V5a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23M12 19v4M8 23h8"/></svg>
+      <span class="cbtn-label">Sessiz</span>
+    </button>
+    <button class="cbtn" id="cbtn-vid" style="display:none;">
+      <svg id="icon-cam-on" viewBox="0 0 24 24"><path d="M23 7 16 12l7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      <svg id="icon-cam-off" viewBox="0 0 24 24" style="display:none"><path d="M1 1l22 22M16.39 16.39A5 5 0 0 1 16 17H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h.56M21 6.37 16 11v6l7 5V7a1 1 0 0 0-1.21-.96"/></svg>
+      <span class="cbtn-label">Kamera</span>
+    </button>
+    <button class="cbtn" id="cbtn-flip" style="display:none;" title="Kamerayı Döndür">
+      <svg viewBox="0 0 24 24"><path d="M1 4v6h6"/><path d="M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10M23 14l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+      <span class="cbtn-label">Çevir</span>
+    </button>
+    <button class="cbtn" id="cbtn-screen" title="Ekran Paylaş">
+      <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <span class="cbtn-label">Ekran</span>
+    </button>
+    <button class="cbtn" id="cbtn-chat" title="Mesajlar">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="cbtn-label">Mesaj</span>
+    </button>
+    <button class="cbtn" id="cbtn-end">
+      <svg viewBox="0 0 24 24" style="transform:rotate(135deg)"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <span class="cbtn-label">Kapat</span>
+    </button>
+  </div>
+  <div id="incall-chat">
+    <div id="incall-chat-header">
+      <span id="incall-chat-name">Mesajlar</span>
+      <button id="incall-chat-close">✕</button>
+    </div>
+    <div id="incall-messages"></div>
+    <div id="incall-input-row">
+      <input type="text" id="incall-msg-input" placeholder="Mesaj yaz..."/>
+      <button id="incall-send-btn">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE MODAL -->
+<div id="prof-modal" class="mo" style="display:none;">
+  <div class="mo-box">
+    <div class="mo-head"><h2>Profili Düzenle</h2><button class="mo-close" data-close="prof-modal">✕</button></div>
+    <div class="mo-body">
+      <div class="av-picker">
+        <div class="big-av" id="prev-av" onclick="document.getElementById('avatar-file-input').click()">
+          <div class="big-av-overlay">📷</div>
+        </div>
+        <input type="file" id="avatar-file-input" accept="image/*" style="display:none"/>
+        <div style="width:100%">
+          <div class="fl">Emoji Seç</div><div class="emoji-row" id="emoji-row"></div>
+          <div class="fl">Renk Seç</div><div class="color-row" id="color-row"></div>
+        </div>
+      </div>
+      <div class="fl">Kullanıcı Adı</div>
+      <input class="fi" id="prof-name" type="text" maxlength="32"/>
+      <div class="fl">Hakkında</div>
+      <input class="fi" id="prof-bio" type="text" maxlength="120" placeholder="Kısa bir bio..."/>
+      <div class="fl">Telefon Numaran</div>
+      <div class="phone-box"><span id="prof-phone"></span><button class="copy-b" id="copy-phone">📋 Kopyala</button></div>
+      <button class="save-b" id="save-prof-btn">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD FRIEND MODAL -->
+<div id="add-modal" class="mo" style="display:none;">
+  <div class="mo-box">
+    <div class="mo-head"><h2>Arkadaş Ekle</h2><button class="mo-close" data-close="add-modal">✕</button></div>
+    <div class="mo-body">
+      <div class="fl">Telefon Numarasıyla Ara</div>
+      <div class="ph-row">
+        <div class="ph-pre">📱 +90</div>
+        <input type="tel" id="friend-phone" placeholder="5XX XXX XXXX" maxlength="15"/>
+        <button class="srch-b" id="search-friend-btn">Ara</button>
+      </div>
+      <div id="friend-result"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE GROUP MODAL -->
+<div id="group-modal" class="mo" style="display:none;">
+  <div class="mo-box">
+    <div class="mo-head"><h2>👥 Grup Oluştur</h2><button class="mo-close" data-close="group-modal">✕</button></div>
+    <div class="mo-body">
+      <div class="fl">Grup Adı</div>
+      <input class="fi" id="group-name" type="text" maxlength="50" placeholder="Grup adını girin..."/>
+      <div class="fl">Açıklama (isteğe bağlı)</div>
+      <input class="fi" id="group-desc" type="text" maxlength="120" placeholder="Grup hakkında..."/>
+      <div class="fl">Üye Ekle</div>
+      <div class="member-check-list" id="member-check-list"></div>
+      <button class="save-b" id="create-group-submit-btn">Grubu Oluştur</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER PREVIEW MODAL -->
+<div id="pv-modal" class="mo" style="display:none;">
+  <div class="mo-box">
+    <div class="mo-head"><h2>Profil</h2><button class="mo-close" data-close="pv-modal">✕</button></div>
+    <div class="mo-body"><div id="pv-body" class="pv-center"></div></div>
+  </div>
+</div>
+
+<!-- STICKER CREATOR MODAL -->
+<div id="sticker-create-modal" class="mo" style="display:none;">
+  <div class="mo-box" style="max-width:420px;">
+    <div class="mo-head"><h2>🎨 Sticker Oluştur</h2><button class="mo-close" data-close="sticker-create-modal">✕</button></div>
+    <div class="mo-body">
+      <div id="sticker-canvas-wrap">
+        <canvas id="sticker-canvas" width="240" height="240"></canvas>
+        <div class="sc-tools">
+          <button class="sc-tool on" id="sc-pen" title="Kalem">🖊 Kalem</button>
+          <button class="sc-tool" id="sc-eraser" title="Silgi">✏️ Silgi</button>
+          <button class="sc-tool" id="sc-text-tool" title="Metin">T Metin</button>
+          <button class="sc-tool" id="sc-clear" title="Temizle">🗑 Temizle</button>
+        </div>
+        <div class="sc-tools">
+          <label style="color:#8696a0;font-size:.8rem;">Renk:</label>
+          <input type="color" id="sc-color" value="#00a884" style="width:32px;height:32px;border:none;border-radius:6px;cursor:pointer;background:none;padding:0;"/>
+          <label style="color:#8696a0;font-size:.8rem;">Boyut:</label>
+          <input type="range" class="sc-range" id="sc-size" min="2" max="30" value="6" style="width:80px;"/>
+          <span id="sc-size-val" style="color:#8696a0;font-size:.8rem;">6</span>
+        </div>
+        <div class="sc-tools" id="sc-text-row" style="display:none;">
+          <input class="fi" id="sc-text-input" type="text" placeholder="Metin girin..." style="flex:1;padding:6px 10px;font-size:.85rem;"/>
+          <button class="sc-tool" id="sc-add-text">Ekle</button>
+        </div>
+        <div class="sc-tools">
+          <label style="color:#8696a0;font-size:.8rem;">Arka Plan:</label>
+          <input type="color" id="sc-bg-color" value="#182229" style="width:32px;height:32px;border:none;border-radius:6px;cursor:pointer;background:none;padding:0;"/>
+          <button class="sc-tool" id="sc-bg-transparent">Şeffaf</button>
+        </div>
+        <button class="save-b" id="sc-save-btn">💾 Sticker Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION BANNER -->
+<div id="notif-banner">
+  <div class="nb-av" id="nb-av"></div>
+  <div class="nb-text">
+    <div class="nb-name" id="nb-name"></div>
+    <div class="nb-msg" id="nb-msg"></div>
+  </div>
+</div>
+
+<audio id="remote-audio" autoplay playsinline></audio>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════
+//  AUDIO ENGINE
+// ══════════════════════════════════════════════════════════
+let _actx=null,_ringIv=null;
+function actx(){
+  if(!_actx) _actx=new(window.AudioContext||window.webkitAudioContext)();
+  if(_actx.state==="suspended") _actx.resume();
+  return _actx;
+}
+function playTone(freqs,dur=0.15,vol=0.18,type="sine",delay=0){
+  try{
+    const ctx=actx(),t=ctx.currentTime+delay;
+    freqs.forEach((f,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type=type;o.frequency.value=f;o.connect(g);g.connect(ctx.destination);
+      const at=t+i*0.09;
+      g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(vol,at+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001,at+dur);
+      o.start(at);o.stop(at+dur+0.01);
+    });
+  }catch(e){}
+}
+function playMsgSound(){playTone([880,1100],0.13,0.16);}
+function startRing(){
+  stopRing();
+  function ring(){
+    try{
+      const ctx=actx();let t=ctx.currentTime+0.05;
+      [[480,0.25],[440,0.25],[480,0.25],[440,0.25]].forEach(([f,d])=>{
+        const o=ctx.createOscillator(),g=ctx.createGain();
+        o.type="square";o.frequency.value=f;o.connect(g);g.connect(ctx.destination);
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.15,t+0.01);
+        g.gain.linearRampToValueAtTime(0,t+d-0.02);
+        o.start(t);o.stop(t+d);t+=d+0.04;
+      });
+    }catch(e){}
+  }
+  ring();_ringIv=setInterval(ring,2200);
+}
+function stopRing(){if(_ringIv){clearInterval(_ringIv);_ringIv=null;}}
+function playConnected(){playTone([660,880],0.22,0.14,"sine",0);}
+
+// ══════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════
+let me=null,socket=null,activeChat=null,iceServers=[];
+let friends=[],groups=[],pendingIn=[],unread={},lastMsg={},onlineSet=new Set();
+let typingTimers={};
+let activeCallId=null,callType="audio";
+let localStream=null,screenStream=null,pc=null;
+let isMuted=false,isCamOff=false,isSharingScreen=false;
+let currentFacingMode="user";
+let stickers=[]; // { id, dataUrl }
+let emojiPickerOpen=false,stickerPickerOpen=false;
+
+const EMOJIS=["😊","😎","🤩","🥳","😇","🦁","🐯","🦊","🐺","🐸","🤖","👾","🎃","🦋","🌟","🔥","🎯","🧊"];
+const COLORS=["#6d28d9","#0891b2","#059669","#d97706","#dc2626","#7c3aed","#0284c7","#16a34a","#9333ea","#e11d48","#0f766e","#b45309"];
+let selEmoji="😊",selColor="#6d28d9";
+
+// Full emoji dataset by category
+const EMOJI_CATS={
+  "😀 Yüzler":["😀","😃","😄","😁","😆","😅","🤣","😂","🙂","🙃","😉","😊","😇","🥰","😍","🤩","😘","😗","😙","😚","😋","😛","😜","🤪","😝","🤑","🤗","🤭","🤫","🤔","🤐","🤨","😐","😑","😶","😏","😒","🙄","😬","🤥","😌","😔","😪","🤤","😴","😷","🤒","🤕","🤢","🤮","🤧","🥵","🥶","🥴","😵","🤯","🤠","🥳","😎","🤓","🧐","😕","😟","🙁","☹","😮","😯","😲","😳","🥺","😦","😧","😨","😰","😥","😢","😭","😱","😖","😣","😞","😓","😩","😫","🥱","😤","😡","😠","🤬","😈","👿","💀","☠","💩","🤡","👹","👺","👻","👽","👾","🤖"],
+  "👋 Eller":["👋","🤚","✋","🖐","👌","🤌","🤏","✌","🤞","🤟","🤘","🤙","👈","👉","👆","🖕","👇","☝","👍","👎","✊","👊","🤛","🤜","👏","🙌","👐","🤲","🤝","🙏","✍","💅","🤳","💪","🦵","🦶","👂","🦻","👃","🧠","🦷","🦴","👀","👁","👅","👄"],
+  "🐶 Hayvanlar":["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🙈","🙉","🙊","🐔","🐧","🐦","🐤","🦆","🦅","🦉","🦇","🐺","🐗","🐴","🦄","🐝","🪱","🐛","🦋","🐌","🐞","🐜","🪲","🦟","🦗","🕷","🦂","🐢","🦎","🐍","🦖","🦕","🐙","🦑","🦐","🦞","🦀","🐡","🐠","🐟","🐬","🐳","🐋","🦈","🐊","🐅","🐆","🦓","🦍","🦧","🦣","🐘","🦛","🦏","🐪","🐫","🦒","🦘","🦬","🐃","🐂","🐄","🐎","🐖","🐏","🐑","🦙","🐐","🦌","🐕","🐩","🦮","🐕‍🦺","🐈","🐈‍⬛","🪶","🐓","🦃","🦤","🦚","🦜","🦢","🦩","🕊","🐇","🦝","🦨","🦡","🦫","🦦","🦥","🐁","🐀","🐿","🦔"],
+  "🍕 Yemek":["🍕","🍔","🍟","🌭","🍿","🧆","🥚","🍳","🧇","🥞","🧈","🥓","🥩","🍗","🍖","🌮","🌯","🥙","🧆","🥗","🥘","🍝","🍜","🍲","🍛","🍣","🍱","🥟","🦪","🍤","🍙","🍚","🍘","🍥","🥮","🍢","🧁","🍰","🎂","🍮","🍭","🍬","🍫","🍿","🍩","🍪","🌰","🥜","🍯","🧃","🥤","🧋","🍵","☕","🍶","🍺","🍻","🥂","🍷","🥃","🍸","🍹","🧉","🍾","🧊","🥄","🍴","🍽","🥢","🧂"],
+  "⚽ Spor":["⚽","🏀","🏈","⚾","🥎","🎾","🏐","🏉","🥏","🎱","🪀","🏓","🏸","🏒","🏑","🥍","🏏","🪃","🥅","⛳","🪁","🎿","🛷","🥌","🎯","🎣","🤿","🎽","🎿","🛹","🛼","🤺","🤼","🤸","⛹","🤾","🏌","🏇","🧘","🏋","🚴","🚵","🎖","🏆","🥇","🥈","🥉"],
+  "🚀 Araçlar":["🚗","🚕","🚙","🚌","🚎","🏎","🚓","🚑","🚒","🚐","🛻","🚚","🚛","🚜","🏍","🛵","🚲","🛴","🛺","🚨","🚔","🚍","🚘","🚖","🚡","🚠","🚟","🚃","🚋","🚞","🚝","🚄","🚅","🚈","🚂","🚆","🚇","🚊","🚉","✈️","🛫","🛬","🛩","💺","🛸","🚁","🛶","⛵","🚤","🛥","🛳","⛴","🚢","🚀","🛰","🛎","🧳"],
+  "💡 Objeler":["💡","🔦","🕯","🪔","🧱","💎","🔧","🔨","⚒","🛠","🪛","🔩","🪤","🪣","🧲","💣","🪓","🔪","🗡","⚔","🛡","🚬","🪦","⚱","🏺","🔑","🗝","🔐","🔏","🔒","🔓","🧩","🪆","🎨","🖼","🖌","🎭","🎪","🎬","📷","📸","📹","🎥","📽","📞","📟","📠","📺","📻","🎙","🎚","🎛","⏱","⏰","🕰","⌚","📡","🔋","💾","💿","📀","📼","📟","📱","💻","⌨","🖥","🖨","🖱","🖲","💽","🗜","📦","📫","📪","📬","📭","📮","🗳","✏","🖊","🖋","📝","📁","📂","🗂","📅","📆","📇","📈","📉","📊","📋","📌","📍","📎","🖇","📏","📐","✂","🗃","🗄","🗑","🗒","🗓","📓","📔","📒","📕","📗","📘","📙","📚","📖","🔖","🏷"],
+  "❤️ Semboller":["❤","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❤‍🔥","❤‍🩹","💕","💞","💓","💗","💖","💘","💝","💟","☮","✝","☪","🕉","☸","✡","🔯","🕎","☯","☦","🛐","⛎","♈","♉","♊","♋","♌","♍","♎","♏","♐","♑","♒","♓","🔀","🔁","🔂","▶","⏩","⏭","⏯","◀","⏪","⏮","🔼","⏫","🔽","⏬","⏸","⏹","⏺","🎦","🔅","🔆","📶","📳","📴","📵","📛","🔞","🔕","🔇","🔈","🔉","🔊","📢","📣","💬","💭","🗯","♻","🔱","📛","🔰","⭕","✅","☑","✔","❎","🔲","🔳","⚫","⚪","🟤","🔴","🟠","🟡","🟢","🔵","🟣","🔶","🔷","🔸","🔹","🔺","🔻","💠","🔘","🔲"],
+};
+
+// ══════════════════════════════════════════════════════════
+//  NOTIFICATIONS
+// ══════════════════════════════════════════════════════════
+let notifPerm = false;
+let notifTimer = null;
+
+async function requestNotifications(){
+  if(!("Notification" in window)) return;
+  if(Notification.permission==="granted"){ notifPerm=true; return; }
+  if(Notification.permission!=="denied"){
+    const perm = await Notification.requestPermission();
+    notifPerm = (perm==="granted");
+  }
+}
+
+function sendNotification(title,body,icon,onClick){
+  // In-app banner
+  showInAppBanner(title,body,icon,onClick);
+  // OS notification
+  if(notifPerm && document.hidden){
+    try{
+      const n = new Notification(title,{body,icon:icon||"/favicon.ico",silent:false});
+      n.onclick = ()=>{ window.focus(); n.close(); if(onClick) onClick(); };
+    }catch(e){}
+  }
+}
+
+function showInAppBanner(title,body,icon,onClick){
+  clearTimeout(notifTimer);
+  const nb = document.getElementById("notif-banner");
+  const nbAv = document.getElementById("nb-av");
+  document.getElementById("nb-name").textContent=title;
+  document.getElementById("nb-msg").textContent=body;
+  if(icon && icon.startsWith("/")){
+    nbAv.innerHTML=`<img src="${icon}" alt=""/>`;
+    nbAv.style.background="none";
+  } else {
+    nbAv.textContent=icon||"💬";
+    nbAv.style.background="#2a3942";
+  }
+  nb.classList.add("show");
+  nb.onclick = ()=>{ nb.classList.remove("show"); if(onClick) onClick(); };
+  notifTimer = setTimeout(()=>nb.classList.remove("show"),4000);
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+async function init(){
+  try{
+    const [md,id]=await Promise.all([api("GET","/api/me"),api("GET","/api/ice-servers")]);
+    if(!md||md.error){location.href="/login";return;}
+    me=md;iceServers=id;
+    updateHeader();await loadFriends();await loadGroups();connectSocket();buildPickers();buildEmojiPicker();loadStickers();
+    await requestNotifications();
+  }catch(e){location.href="/login";}
+}
+
+function updateHeader(){
+  const btn=document.getElementById("my-av-btn");
+  btn.style.background=me.avatar_color;
+  if(me.avatar_url){
+    document.getElementById("my-av-emoji").innerHTML=`<img src="${me.avatar_url}" alt=""/>`;
+  } else {
+    document.getElementById("my-av-emoji").textContent=me.avatar_emoji;
+  }
+  document.getElementById("my-display-name").textContent=me.display_name;
+}
+
+async function api(method,url,body){
+  const o={method,headers:{"Content-Type":"application/json"}};
+  if(body) o.body=JSON.stringify(body);
+  return (await fetch(url,o)).json();
+}
+
+function mkAv(f){
+  if(f.avatar_url) return `<img src="${f.avatar_url}" alt=""/>`;
+  return f.avatar_emoji||"😊";
+}
+function avBg(f){ return f.avatar_url?"#2a3942":f.avatar_color||"#6d28d9"; }
+
+// ══════════════════════════════════════════════════════════
+//  SOCKET
+// ══════════════════════════════════════════════════════════
+function connectSocket(){
+  socket=io({transports:["websocket","polling"]});
+
+  socket.on("friend_online",({id})=>{onlineSet.add(id);updateDot(id,true);});
+  socket.on("friend_offline",({id})=>{onlineSet.delete(id);updateDot(id,false);
+    if(activeChat?.id===id&&!activeChat.isGroup) document.getElementById("ch-sub").textContent="çevrimdışı";
+  });
+
+  socket.on("new_message",msg=>{
+    lastMsg[msg.from_id]=msg;updatePreview(msg.from_id);
+    if(activeChat?.id===msg.from_id&&!activeChat.isGroup){appendMsg(msg,false);}
+    else{unread[msg.from_id]=(unread[msg.from_id]||0)+1;updateBadge(msg.from_id);playMsgSound();}
+    if(activeCallId&&activeChat?.id===msg.from_id) appendInCallMsg(msg,false);
+    // Notification
+    const f=friends.find(x=>x.id===msg.from_id);
+    if(activeChat?.id!==msg.from_id){
+      const icon=f?.avatar_url||f?.avatar_emoji||"💬";
+      sendNotification(f?.display_name||"Mesaj",msg.type==="sticker"?"🎭 Sticker gönderdi":msg.text,
+        f?.avatar_url||null, ()=>f&&openChat(f));
+    }
+  });
+  socket.on("message_sent",msg=>{
+    lastMsg[msg.to_id]=msg;updatePreview(msg.to_id);appendMsg(msg,true);
+    if(activeCallId&&activeChat?.id===msg.to_id) appendInCallMsg(msg,true);
+  });
+
+  socket.on("new_group_message",msg=>{
+    if(!lastMsg["g:"+msg.group_id]||lastMsg["g:"+msg.group_id].time<msg.time) lastMsg["g:"+msg.group_id]=msg;
+    updateGroupPreview(msg.group_id,msg);
+    if(activeChat?.id===msg.group_id&&activeChat.isGroup){
+      appendGroupMsg(msg, msg.from_id===me.id);
+    } else {
+      unread["g:"+msg.group_id]=(unread["g:"+msg.group_id]||0)+1;
+      updateBadge("g:"+msg.group_id);
+      playMsgSound();
+      if(msg.from_id!==me.id){
+        sendNotification(msg.sender_name+" → "+groups.find(g=>g.id===msg.group_id)?.name,
+          msg.type==="sticker"?"🎭 Sticker":msg.text,null);
+      }
+    }
+  });
+
+  socket.on("typing",({from,isTyping})=>{
+    if(activeChat?.id===from&&!activeChat.isGroup){
+      const f=friends.find(x=>x.id===from);
+      document.getElementById("typing-bar").textContent=isTyping?(f?.display_name||"")+" yazıyor...":"";
+    }
+  });
+  socket.on("group_typing",({from,name,isTyping})=>{
+    if(activeChat?.isGroup){
+      document.getElementById("typing-bar").textContent=isTyping?name+" yazıyor...":"";
+    }
+  });
+
+  // ARAMA
+  socket.on("incoming_call",({callId,from,callType:ct,display_name,avatar_color,avatar_emoji,avatar_url})=>{
+    activeCallId=callId;callType=ct||"audio";
+    startRing();
+    const av=document.getElementById("inc-caller-av");
+    if(avatar_url){av.innerHTML=`<img src="${avatar_url}" alt=""/>`;av.style.background="#2a3942";}
+    else{av.textContent=avatar_emoji;av.style.background=avatar_color;}
+    document.getElementById("inc-name").textContent=display_name;
+    document.getElementById("inc-type").textContent=ct==="video"?"🎥 Görüntülü arama":"📞 Sesli arama";
+    document.getElementById("incoming-call").classList.add("show");
+    sendNotification(display_name,ct==="video"?"Görüntülü arıyor...":"Sesli arıyor...",avatar_url||avatar_emoji||"📞");
+
+    document.getElementById("inc-accept").onclick=async()=>{
+      stopRing();
+      document.getElementById("incoming-call").classList.remove("show");
+      socket.emit("accept_call",{callId});
+      openCallOverlay({id:from,display_name,avatar_color,avatar_emoji,avatar_url},"Bağlanıyor...",ct);
+      await startWebRTC(from,false,ct);
+    };
+    document.getElementById("inc-reject").onclick=()=>{
+      stopRing();
+      document.getElementById("incoming-call").classList.remove("show");
+      socket.emit("reject_call",{callId});activeCallId=null;
+    };
+  });
+  socket.on("call_ringing",({callId})=>{activeCallId=callId;});
+  socket.on("call_accepted",async({callId,by})=>{
+    setCallStat("Bağlanıyor...");
+    await startWebRTC(by,true,callType);
+  });
+  socket.on("call_ended",()=>{stopRing();endCallUI();});
+
+  socket.on("webrtc_offer",async({from,offer})=>{
+    if(!pc) await setupPC(from,false);
+    await pc.setRemoteDescription(new RTCSessionDescription(offer));
+    const ans=await pc.createAnswer();
+    await pc.setLocalDescription(ans);
+    socket.emit("webrtc_answer",{to:from,answer:ans});
+    setCallStat("Bağlandı ✓");playConnected();
+  });
+  socket.on("webrtc_answer",async({answer})=>{
+    await pc?.setRemoteDescription(new RTCSessionDescription(answer));
+    setCallStat("Bağlandı ✓");playConnected();
+  });
+  socket.on("webrtc_ice",({candidate})=>{pc?.addIceCandidate(new RTCIceCandidate(candidate)).catch(()=>{});});
+}
+
+function setCallStat(s){
+  document.getElementById("call-status-bar").textContent=s;
+  document.getElementById("call-stat").textContent=s;
+}
+
+// ══════════════════════════════════════════════════════════
+//  FRIENDS & GROUPS
+// ══════════════════════════════════════════════════════════
+async function loadFriends(){
+  const data=await api("GET","/api/friends");
+  friends=[];pendingIn=[];
+  document.getElementById("friends-list").innerHTML="";
+
+  data.forEach(f=>{
+    if(f.status==="accepted"){friends.push(f);renderFI(f);}
+    else if(f.status==="pending"&&f.requester_id!==me.id){pendingIn.push(f);renderPI(f);}
+  });
+  if(!friends.length&&!pendingIn.length)
+    document.getElementById("friends-list").innerHTML='<div class="empty-list">Henüz arkadaşın yok.</div>';
+
+  const pb=document.getElementById("pend-badge");
+  pb.style.display=pendingIn.length?"inline-flex":"none";pb.textContent=pendingIn.length;
+
+  rebuildChatsList();
+}
+
+async function loadGroups(){
+  const data=await api("GET","/api/groups");
+  groups=data;
+  rebuildChatsList();
+}
+
+function rebuildChatsList(){
+  const cl=document.getElementById("chats-list");
+  cl.innerHTML="";
+  // Friends first
+  friends.forEach(f=>renderCI(f,false));
+  // Then groups
+  groups.forEach(g=>renderCI({id:g.id,display_name:g.name,avatar_color:g.avatar_color,avatar_emoji:g.avatar_emoji,avatar_url:g.avatar_url,isGroup:true},true));
+  if(!friends.length&&!groups.length)
+    cl.innerHTML='<div class="empty-list">Henüz sohbet yok.<br/>Arkadaş ekle veya grup oluştur!</div>';
+}
+
+function renderCI(f,isGroup){
+  const el=document.createElement("div");
+  el.className="ci";el.id="ci-"+(isGroup?"g:":"")+f.id;
+  const key=isGroup?"g:"+f.id:f.id;
+  const lm=lastMsg[key];const isOn=!isGroup&&onlineSet.has(f.id);
+  el.innerHTML=`
+    <div class="ci-av" style="background:${avBg(f)}" id="cav-${key}">
+      ${mkAv(f)}${isOn?'<div class="od"></div>':""}
+    </div>
+    <div class="ci-info">
+      <div class="ci-name">${esc(f.display_name)}${isGroup?'<span class="group-badge">Grup</span>':""}</div>
+      <div class="ci-prev">${lm?(isGroup?esc(lm.sender_name+": "+(lm.type==="sticker"?"🎭":lm.text)):esc((lm.from_id===me.id?"Sen: ":"")+(lm.type==="sticker"?"🎭 Sticker":lm.text))):"Merhaba diyerek başla 👋"}</div>
+    </div>
+    <div class="ci-meta">
+      <span class="ci-time">${lm?fmtT(lm.time):""}</span>
+      <span class="ci-badge" id="badge-${key}" style="display:${(unread[key]||0)>0?"flex":"none"}">${unread[key]||""}</span>
+    </div>`;
+  if(isGroup) el.addEventListener("click",()=>openGroupChat(f.id));
+  else el.addEventListener("click",()=>openChat(f));
+  document.getElementById("chats-list").appendChild(el);
+}
+
+function renderFI(f){
+  const el=document.createElement("div");el.className="ci";el.id="fi-"+f.id;
+  el.innerHTML=`
+    <div class="ci-av" style="background:${avBg(f)}">${mkAv(f)}</div>
+    <div class="ci-info">
+      <div class="ci-name">${esc(f.display_name)}</div>
+      <div class="ci-prev">📱 ${fmtPhone(f.phone_number)}</div>
+    </div>
+    <div class="ci-meta"><button class="ib" onclick="showPV('${f.id}')">👤</button></div>`;
+  document.getElementById("friends-list").appendChild(el);
+}
+
+function renderPI(f){
+  const el=document.createElement("div");el.className="ci";el.id="pi-"+f.id;
+  el.innerHTML=`
+    <div class="ci-av" style="background:${avBg(f)}">${mkAv(f)}</div>
+    <div class="ci-info">
+      <div class="ci-name">${esc(f.display_name)}</div>
+      <div class="ci-prev">Arkadaşlık isteği gönderdi</div>
+      <div class="pend-acts">
+        <button class="pab acc" onclick="acceptF('${f.id}','${f.requester_id}')">✓ Kabul</button>
+        <button class="pab rej" onclick="rejectF('${f.requester_id}')">✕ Reddet</button>
+      </div>
+    </div>`;
+  const fl=document.getElementById("friends-list");
+  fl.querySelector(".empty-list")?.remove();fl.prepend(el);
+}
+
+async function acceptF(fid,rid){await api("POST","/api/friends/accept",{requester_id:rid});loadFriends();}
+async function rejectF(rid){await api("DELETE","/api/friends/"+rid);loadFriends();}
+
+function updateDot(uid,on){
+  const av=document.getElementById("cav-"+uid);if(!av) return;
+  const d=av.querySelector(".od");
+  if(on&&!d){const nd=document.createElement("div");nd.className="od";av.appendChild(nd);}
+  else if(!on&&d) d.remove();
+  if(activeChat?.id===uid&&!activeChat.isGroup)
+    document.getElementById("ch-sub").textContent=on?"çevrimiçi":"çevrimdışı";
+}
+
+function updatePreview(uid){
+  const el=document.getElementById("ci-"+uid);if(!el) return;
+  const lm=lastMsg[uid];if(!lm) return;
+  el.querySelector(".ci-prev").textContent=(lm.from_id===me.id?"Sen: ":"")+(lm.type==="sticker"?"🎭 Sticker":lm.text);
+  el.querySelector(".ci-time").textContent=fmtT(lm.time);
+}
+
+function updateGroupPreview(gid,msg){
+  const el=document.getElementById("ci-g:"+gid);if(!el) return;
+  el.querySelector(".ci-prev").textContent=(msg.sender_name||"")+"​: "+(msg.type==="sticker"?"🎭":msg.text);
+  el.querySelector(".ci-time").textContent=fmtT(msg.time);
+}
+
+function updateBadge(uid){
+  const b=document.getElementById("badge-"+uid);if(!b) return;
+  const n=unread[uid]||0;b.style.display=n>0?"flex":"none";b.textContent=n;
+}
+
+// ══════════════════════════════════════════════════════════
+//  CHAT - DIRECT
+// ══════════════════════════════════════════════════════════
+async function openChat(f){
+  activeChat={...f,isGroup:false};
+  unread[f.id]=0;updateBadge(f.id);
+  document.getElementById("sidebar").classList.add("hidden");
+  document.getElementById("chat-panel").classList.add("show");
+  document.getElementById("chat-header").style.display="flex";
+  const av=document.getElementById("ch-av");
+  av.style.background=avBg(f);av.innerHTML=mkAv(f);
+  document.getElementById("ch-name").textContent=f.display_name;
+  document.getElementById("ch-sub").textContent=onlineSet.has(f.id)?"çevrimiçi":"çevrimdışı";
+  // Show/hide call buttons for DMs
+  document.getElementById("audio-call-btn").style.display="flex";
+  document.getElementById("video-call-btn").style.display="flex";
+  document.getElementById("messages").style.display="flex";
+  document.getElementById("input-bar").style.display="flex";
+  document.getElementById("no-chat").style.display="none";
+  document.getElementById("typing-bar").textContent="";
+  document.querySelectorAll(".ci").forEach(e=>e.classList.remove("on"));
+  document.getElementById("ci-"+f.id)?.classList.add("on");
+
+  const msgs=await api("GET","/api/messages/"+f.id);
+  const box=document.getElementById("messages");box.innerHTML="";
+  let lastDate=null;
+  msgs.forEach(m=>{const d=fmtD(m.time);if(d!==lastDate){addSep(d);lastDate=d;}appendMsg(m,m.from_id===me.id);});
+  box.scrollTop=box.scrollHeight;
+  closePickerPopups();
+}
+
+// ══════════════════════════════════════════════════════════
+//  CHAT - GROUP
+// ══════════════════════════════════════════════════════════
+async function openGroupChat(gid){
+  const gData=await api("GET","/api/groups/"+gid);
+  const g=gData.group;const members=gData.members;
+  activeChat={id:gid,display_name:g.name,isGroup:true,avatar_color:g.avatar_color,avatar_emoji:g.avatar_emoji,avatar_url:g.avatar_url,members};
+  unread["g:"+gid]=0;updateBadge("g:"+gid);
+  document.getElementById("sidebar").classList.add("hidden");
+  document.getElementById("chat-panel").classList.add("show");
+  document.getElementById("chat-header").style.display="flex";
+  const av=document.getElementById("ch-av");
+  av.style.background=avBg(g);av.innerHTML=mkAv(g);
+  document.getElementById("ch-name").textContent=g.name;
+  document.getElementById("ch-sub").textContent=members.length+" üye";
+  document.getElementById("audio-call-btn").style.display="none";
+  document.getElementById("video-call-btn").style.display="none";
+  document.getElementById("messages").style.display="flex";
+  document.getElementById("input-bar").style.display="flex";
+  document.getElementById("no-chat").style.display="none";
+  document.getElementById("typing-bar").textContent="";
+  document.querySelectorAll(".ci").forEach(e=>e.classList.remove("on"));
+  document.getElementById("ci-g:"+gid)?.classList.add("on");
+
+  const msgs=await api("GET","/api/groups/"+gid+"/messages");
+  const box=document.getElementById("messages");box.innerHTML="";
+  let lastDate=null;
+  msgs.forEach(m=>{
+    const d=fmtD(m.time);if(d!==lastDate){addSep(d);lastDate=d;}
+    const member=members.find(x=>x.id===m.from_id)||{display_name:"?",avatar_color:"#6d28d9",avatar_emoji:"👤"};
+    appendGroupMsg({...m,sender_name:member.display_name,sender_avatar_color:member.avatar_color,
+      sender_avatar_emoji:member.avatar_emoji,sender_avatar_url:member.avatar_url},m.from_id===me.id);
+  });
+  box.scrollTop=box.scrollHeight;
+  closePickerPopups();
+}
+
+function appendMsg(m,mine){
+  const box=document.getElementById("messages");
+  const row=document.createElement("div");
+  row.className="mr "+(mine?"mine":"theirs");
+  let content;
+  if(m.type==="sticker"){
+    content=`<img class="sticker-img" src="${esc(m.text)}" alt="sticker"/>`;
+  } else {
+    content=`<div class="txt">${esc(m.text)}</div>`;
+  }
+  row.innerHTML=`<div class="bbl">${content}<div class="bt">${fmtT(m.time)}</div></div>`;
+  box.appendChild(row);box.scrollTop=box.scrollHeight;
+}
+
+function appendGroupMsg(m,mine){
+  const box=document.getElementById("messages");
+  const row=document.createElement("div");
+  row.className="mr "+(mine?"mine":"theirs");
+  let content;
+  if(m.type==="sticker"){
+    content=`<img class="sticker-img" src="${esc(m.text)}" alt="sticker"/>`;
+  } else {
+    content=`<div class="txt">${esc(m.text)}</div>`;
+  }
+  const senderName=!mine?`<div class="msg-sender-name">${esc(m.sender_name||"")}</div>`:"";
+  const avHtml=!mine?`<div class="msg-sender-av" style="background:${m.sender_avatar_url?"#2a3942":(m.sender_avatar_color||"#6d28d9")}">${m.sender_avatar_url?`<img src="${m.sender_avatar_url}" alt=""/>`:m.sender_avatar_emoji||"👤"}</div>`:"";
+  row.innerHTML=`${avHtml}<div class="bbl">${senderName}${content}<div class="bt">${fmtT(m.time)}</div></div>`;
+  box.appendChild(row);box.scrollTop=box.scrollHeight;
+}
+
+function addSep(label){
+  const el=document.createElement("div");el.className="dsep";el.innerHTML=`<span>${label}</span>`;
+  document.getElementById("messages").appendChild(el);
+}
+
+function sendMsg(){
+  const inp=document.getElementById("msg-input"),text=inp.value.trim();
+  if(!text||!activeChat) return;
+  if(activeChat.isGroup){
+    socket.emit("send_group_message",{groupId:activeChat.id,text});
+  } else {
+    socket.emit("send_message",{to:activeChat.id,text});
+  }
+  inp.value="";inp.style.height="auto";
+  if(!activeChat.isGroup) socket.emit("typing",{to:activeChat.id,isTyping:false});
+  else socket.emit("group_typing",{groupId:activeChat.id,isTyping:false});
+  closePickerPopups();
+}
+
+function sendSticker(dataUrl){
+  if(!activeChat) return;
+  if(activeChat.isGroup){
+    socket.emit("send_group_message",{groupId:activeChat.id,text:dataUrl,type:"sticker"});
+  } else {
+    socket.emit("send_message",{to:activeChat.id,text:dataUrl,type:"sticker"});
+  }
+  closePickerPopups();
+}
+
+// ══════════════════════════════════════════════════════════
+//  WEBRTC + SCREEN SHARE
+// ══════════════════════════════════════════════════════════
+async function startWebRTC(remoteId,isInitiator,ct){
+  if(!localStream){
+    const aConst={echoCancellation:true,noiseSuppression:true,autoGainControl:true,sampleRate:48000};
+    const vConst={width:{ideal:1920,min:1280},height:{ideal:1080,min:720},frameRate:{ideal:30,min:15},facingMode:currentFacingMode};
+    const constraints=ct==="video"?{audio:aConst,video:vConst}:{audio:aConst,video:false};
+    try{localStream=await navigator.mediaDevices.getUserMedia(constraints);}
+    catch(e){alert("Kamera/Mikrofon izni gerekli!");endCallUI();return;}
+  }
+  if(ct==="video"){
+    const lv=document.getElementById("local-video");lv.srcObject=localStream;lv.classList.add("show");
+  }
+  await setupPC(remoteId,isInitiator);
+}
+
+async function setupPC(remoteId,isInitiator){
+  pc=new RTCPeerConnection({iceServers});
+  localStream.getTracks().forEach(t=>pc.addTrack(t,localStream));
+  pc.ontrack=e=>{
+    const s=e.streams[0];
+    if(e.track.kind==="video"){
+      const rv=document.getElementById("remote-video");rv.srcObject=s;rv.classList.add("show");
+      document.getElementById("audio-avatar-center").style.display="none";
+    } else {
+      document.getElementById("remote-audio").srcObject=s;
+    }
+  };
+  pc.onicecandidate=e=>{
+    if(e.candidate) socket.emit("webrtc_ice",{to:remoteId,candidate:e.candidate});
+  };
+  pc.onconnectionstatechange=()=>{
+    const s=pc.connectionState;
+    if(s==="connected"){setCallStat("Bağlandı ✓");playConnected();}
+    if(s==="failed"||s==="disconnected") endCallUI();
+  };
+  if(isInitiator){
+    const offer=await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    socket.emit("webrtc_offer",{to:remoteId,offer});
+  }
+}
+
+async function toggleScreenShare(){
+  if(!isSharingScreen){
+    try{
+      screenStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});
+      const screenTrack=screenStream.getVideoTracks()[0];
+      // Replace video track in peer connection
+      if(pc){
+        const sender=pc.getSenders().find(s=>s.track?.kind==="video");
+        if(sender) await sender.replaceTrack(screenTrack);
+      }
+      // Show screen in remote-video area for local preview
+      const ssv=document.getElementById("screen-share-video");
+      ssv.srcObject=screenStream;ssv.classList.add("show");
+      isSharingScreen=true;
+      document.getElementById("cbtn-screen").classList.add("active");
+      document.getElementById("cbtn-screen").querySelector(".cbtn-label").textContent="Durdur";
+      screenTrack.onended=()=>stopScreenShare();
+    }catch(e){console.error("Ekran paylaşımı:",e);}
+  } else {
+    stopScreenShare();
+  }
+}
+
+async function stopScreenShare(){
+  screenStream?.getTracks().forEach(t=>t.stop());screenStream=null;
+  // Restore camera if video call
+  if(callType==="video"&&localStream){
+    const camTrack=localStream.getVideoTracks()[0];
+    if(pc&&camTrack){
+      const sender=pc.getSenders().find(s=>s.track?.kind==="video");
+      if(sender) await sender.replaceTrack(camTrack);
+    }
+  }
+  const ssv=document.getElementById("screen-share-video");ssv.srcObject=null;ssv.classList.remove("show");
+  isSharingScreen=false;
+  document.getElementById("cbtn-screen").classList.remove("active");
+  document.getElementById("cbtn-screen").querySelector(".cbtn-label").textContent="Ekran";
+}
+
+function openCallOverlay(f,status,ct){
+  callType=ct;
+  document.getElementById("call-name-bar").textContent=f.display_name||f.id;
+  setCallStat(status);
+  document.getElementById("call-rname").textContent=f.display_name||f.id;
+  const av=document.getElementById("remote-av-circle");
+  if(f.avatar_url){av.innerHTML=`<img src="${f.avatar_url}" alt=""/>`;av.style.background="#2a3942";}
+  else{av.textContent=f.avatar_emoji||"😊";av.style.background=f.avatar_color||"#6d28d9";}
+  const isVideo=ct==="video";
+  document.getElementById("cbtn-vid").style.display=isVideo?"flex":"none";
+  document.getElementById("cbtn-flip").style.display=isVideo?"flex":"none";
+  document.getElementById("audio-avatar-center").style.display="flex";
+  document.getElementById("remote-video").classList.remove("show");
+  document.getElementById("local-video").classList.remove("show");
+  document.getElementById("call-overlay").classList.add("show");
+}
+
+function endCallUI(){
+  stopRing();stopScreenShare();
+  document.getElementById("call-overlay").classList.remove("show");
+  document.getElementById("incoming-call").classList.remove("show");
+  document.getElementById("incall-chat").classList.remove("open");
+  document.getElementById("cbtn-chat").classList.remove("active");
+  pc?.close();pc=null;
+  localStream?.getTracks().forEach(t=>t.stop());localStream=null;
+  ["remote-audio","remote-video","local-video","screen-share-video"].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.srcObject=null;el.classList?.remove?.("show");}
+  });
+  document.getElementById("audio-avatar-center").style.display="flex";
+  activeCallId=null;isMuted=false;isCamOff=false;isSharingScreen=false;currentFacingMode="user";
+  document.getElementById("icon-mic-on").style.display="";document.getElementById("icon-mic-off").style.display="none";
+  document.getElementById("cbtn-mute").classList.remove("muted");
+  document.getElementById("icon-cam-on").style.display="";document.getElementById("icon-cam-off").style.display="none";
+  document.getElementById("cbtn-vid").classList.remove("off");
+  document.getElementById("incall-messages").innerHTML="";
+}
+
+function appendInCallMsg(msg,mine){
+  const c=document.getElementById("incall-messages");
+  const row=document.createElement("div");
+  row.className="icm-row "+(mine?"mine":"theirs");
+  row.innerHTML=`<div class="icm-bub"><div class="icm-txt">${esc(msg.text)}</div><div class="icm-t">${fmtT(msg.time)}</div></div>`;
+  c.appendChild(row);c.scrollTop=c.scrollHeight;
+}
+
+function sendInCallMsg(){
+  const inp=document.getElementById("incall-msg-input"),text=inp.value.trim();
+  if(!text||!activeChat) return;
+  socket.emit("send_message",{to:activeChat.id,text});
+  inp.value="";
+}
+
+// ══════════════════════════════════════════════════════════
+//  EMOJI PICKER
+// ══════════════════════════════════════════════════════════
+function buildEmojiPicker(){
+  const cats=document.getElementById("ep-cats");
+  const catKeys=Object.keys(EMOJI_CATS);
+  catKeys.forEach((cat,i)=>{
+    const btn=document.createElement("button");btn.className="ep-cat"+(i===0?" on":"");
+    btn.textContent=cat.split(" ")[0];btn.title=cat;
+    btn.onclick=()=>{
+      document.querySelectorAll(".ep-cat").forEach(b=>b.classList.remove("on"));
+      btn.classList.add("on");renderEmojiGrid(EMOJI_CATS[cat]);
+    };
+    cats.appendChild(btn);
+  });
+  renderEmojiGrid(EMOJI_CATS[catKeys[0]]);
+  document.getElementById("ep-search").addEventListener("input",function(){
+    const q=this.value.toLowerCase();
+    if(!q){renderEmojiGrid(EMOJI_CATS[catKeys[0]]);return;}
+    const all=Object.values(EMOJI_CATS).flat();
+    renderEmojiGrid(all.filter(e=>e.includes(q)));
+  });
+}
+
+function renderEmojiGrid(emojis){
+  const grid=document.getElementById("ep-grid");grid.innerHTML="";
+  emojis.forEach(em=>{
+    const btn=document.createElement("button");btn.className="ep-em";btn.textContent=em;
+    btn.onclick=()=>{
+      const inp=document.getElementById("msg-input");
+      const pos=inp.selectionStart||inp.value.length;
+      inp.value=inp.value.slice(0,pos)+em+inp.value.slice(pos);
+      inp.focus();inp.setSelectionRange(pos+em.length,pos+em.length);
+      closePickerPopups();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  STICKER SYSTEM
+// ══════════════════════════════════════════════════════════
+function loadStickers(){
+  try{stickers=JSON.parse(localStorage.getItem("chatapp_stickers")||"[]");}catch(e){stickers=[];}
+  renderStickerGrid();
+}
+function saveStickers(){localStorage.setItem("chatapp_stickers",JSON.stringify(stickers));}
+function renderStickerGrid(){
+  const grid=document.getElementById("sp-grid");grid.innerHTML="";
+  if(!stickers.length){grid.innerHTML='<div class="sp-empty">Henüz sticker yok.<br/>Oluştur!</div>';return;}
+  stickers.forEach((s,i)=>{
+    const item=document.createElement("div");item.className="sp-item";
+    item.innerHTML=`<img src="${s.dataUrl}" alt="sticker"/><button class="sp-del" onclick="deleteSticker(${i},event)">✕</button>`;
+    item.querySelector("img").onclick=()=>sendSticker(s.dataUrl);
+    grid.appendChild(item);
+  });
+}
+function deleteSticker(i,e){
+  e.stopPropagation();stickers.splice(i,1);saveStickers();renderStickerGrid();
+}
+
+// Sticker Canvas
+let scDrawing=false,scTool="pen",scTransparentBg=false;
+let scHistory=[];
+
+function initStickerCanvas(){
+  const canvas=document.getElementById("sticker-canvas");
+  const ctx=canvas.getContext("2d");
+  resetCanvas(ctx);
+
+  canvas.onmousedown=canvas.ontouchstart=e=>{
+    scDrawing=true;
+    const pos=getPos(e,canvas);
+    ctx.beginPath();ctx.moveTo(pos.x,pos.y);
+    e.preventDefault();
+  };
+  canvas.onmousemove=canvas.ontouchmove=e=>{
+    if(!scDrawing) return;
+    const pos=getPos(e,canvas);
+    if(scTool==="pen"){
+      ctx.globalCompositeOperation="source-over";
+      ctx.strokeStyle=document.getElementById("sc-color").value;
+      ctx.lineWidth=parseInt(document.getElementById("sc-size").value);
+      ctx.lineCap="round";
+      ctx.lineTo(pos.x,pos.y);ctx.stroke();
+    } else if(scTool==="eraser"){
+      ctx.globalCompositeOperation="destination-out";
+      ctx.lineWidth=parseInt(document.getElementById("sc-size").value)*2;
+      ctx.lineCap="round";
+      ctx.lineTo(pos.x,pos.y);ctx.stroke();
+    }
+    e.preventDefault();
+  };
+  canvas.onmouseup=canvas.ontouchend=()=>{scDrawing=false;ctx.globalCompositeOperation="source-over";};
+}
+
+function resetCanvas(ctx){
+  const canvas=document.getElementById("sticker-canvas");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(!scTransparentBg){
+    ctx.fillStyle=document.getElementById("sc-bg-color").value;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+}
+
+function getPos(e,canvas){
+  const rect=canvas.getBoundingClientRect();
+  const scaleX=canvas.width/rect.width;const scaleY=canvas.height/rect.height;
+  const clientX=e.touches?e.touches[0].clientX:e.clientX;
+  const clientY=e.touches?e.touches[0].clientY:e.clientY;
+  return{x:(clientX-rect.left)*scaleX,y:(clientY-rect.top)*scaleY};
+}
+
+// ══════════════════════════════════════════════════════════
+//  PROFILE
+// ══════════════════════════════════════════════════════════
+function buildPickers(){
+  const er=document.getElementById("emoji-row");
+  EMOJIS.forEach(e=>{
+    const b=document.createElement("button");b.className="eo";b.textContent=e;
+    b.onclick=()=>{selEmoji=e;document.querySelectorAll(".eo").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");
+      const pa=document.getElementById("prev-av");pa.textContent=e;pa.style.removeProperty("background-image");};
+    er.appendChild(b);
+  });
+  const cr=document.getElementById("color-row");
+  COLORS.forEach(c=>{
+    const b=document.createElement("button");b.className="co";b.style.background=c;
+    b.onclick=()=>{selColor=c;document.querySelectorAll(".co").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");
+      document.getElementById("prev-av").style.background=c;};
+    cr.appendChild(b);
+  });
+}
+
+function openProfile(){
+  selEmoji=me.avatar_emoji;selColor=me.avatar_color;
+  document.getElementById("prof-name").value=me.display_name;
+  document.getElementById("prof-bio").value=me.bio||"";
+  document.getElementById("prof-phone").textContent=fmtPhone(me.phone_number);
+  const pav=document.getElementById("prev-av");
+  if(me.avatar_url){
+    pav.innerHTML=`<img src="${me.avatar_url}" alt=""/><div class="big-av-overlay">📷</div>`;
+  } else {
+    pav.innerHTML=`${me.avatar_emoji}<div class="big-av-overlay">📷</div>`;
+  }
+  pav.style.background=me.avatar_color;
+  document.querySelectorAll(".eo").forEach(b=>b.classList.toggle("sel",b.textContent===selEmoji));
+  document.getElementById("prof-modal").style.display="flex";
+}
+
+// Avatar file upload
+document.getElementById("avatar-file-input").addEventListener("change",async function(){
+  if(!this.files[0]) return;
+  const formData=new FormData();
+  formData.append("avatar",this.files[0]);
+  try{
+    const res=await fetch("/api/me/avatar",{method:"POST",body:formData});
+    const data=await res.json();
+    if(data.ok){
+      me.avatar_url=data.avatar_url;
+      const pav=document.getElementById("prev-av");
+      pav.innerHTML=`<img src="${data.avatar_url}" alt=""/><div class="big-av-overlay">📷</div>`;
+      updateHeader();
+    }
+  }catch(e){console.error(e);}
+});
+
+document.getElementById("save-prof-btn").addEventListener("click",async()=>{
+  const updated=await api("PUT","/api/me",{
+    display_name:document.getElementById("prof-name").value.trim(),
+    bio:document.getElementById("prof-bio").value.trim(),
+    avatar_color:selColor,avatar_emoji:selEmoji,
+  });
+  me=updated;updateHeader();
+  document.getElementById("prof-modal").style.display="none";
+  await loadFriends();await loadGroups();
+});
+
+document.getElementById("copy-phone").addEventListener("click",()=>{
+  navigator.clipboard.writeText(me.phone_number).then(()=>{
+    document.getElementById("copy-phone").textContent="✅ Kopyalandı";
+    setTimeout(()=>document.getElementById("copy-phone").textContent="📋 Kopyala",2000);
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+//  ADD FRIEND
+// ══════════════════════════════════════════════════════════
+document.getElementById("search-friend-btn").addEventListener("click",async()=>{
+  const phone=document.getElementById("friend-phone").value.replace(/\D/g,"");
+  const res=await api("GET",`/api/users/search?phone=${phone}`);
+  const cont=document.getElementById("friend-result");
+  if(!res.user){cont.innerHTML='<p style="color:#8696a0;margin-top:12px;font-size:.85rem;">Kullanıcı bulunamadı.</p>';return;}
+  const u=res.user;const isFr=friends.some(f=>f.id===u.id);
+  cont.innerHTML=`<div class="found-box">
+    <div class="found-av" style="background:${avBg(u)}">${mkAv(u)}</div>
+    <div><div class="found-nm">${esc(u.display_name)}</div><div class="found-ph">📱 ${fmtPhone(u.phone_number)}</div>${u.bio?`<div class="found-bio">${esc(u.bio)}</div>`:""}</div>
+    <button class="add-b" id="do-add" ${isFr?"disabled":""}>${isFr?"✓ Arkadaş":"Ekle"}</button>
+  </div>`;
+  document.getElementById("do-add")?.addEventListener("click",async()=>{
+    const r=await api("POST","/api/friends/request",{addressee_id:u.id});
+    if(r.error){alert(r.error);return;}
+    document.getElementById("do-add").disabled=true;document.getElementById("do-add").textContent="İstek gönderildi ✓";
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+//  CREATE GROUP
+// ══════════════════════════════════════════════════════════
+document.getElementById("create-group-btn").addEventListener("click",()=>{
+  document.getElementById("group-name").value="";
+  document.getElementById("group-desc").value="";
+  const mcl=document.getElementById("member-check-list");
+  mcl.innerHTML="";
+  friends.forEach(f=>{
+    const item=document.createElement("div");item.className="mcl-item";
+    item.innerHTML=`
+      <input type="checkbox" value="${f.id}" id="mc-${f.id}"/>
+      <div class="mcl-av" style="background:${avBg(f)}">${mkAv(f)}</div>
+      <label class="mcl-name" for="mc-${f.id}">${esc(f.display_name)}</label>`;
+    mcl.appendChild(item);
+  });
+  if(!friends.length) mcl.innerHTML='<p style="color:#8696a0;font-size:.85rem;padding:8px;">Arkadaşın yok. Önce arkadaş ekle.</p>';
+  document.getElementById("group-modal").style.display="flex";
+});
+
+document.getElementById("create-group-submit-btn").addEventListener("click",async()=>{
+  const name=document.getElementById("group-name").value.trim();
+  if(!name){alert("Grup adı gerekli!");return;}
+  const member_ids=[...document.querySelectorAll("#member-check-list input:checked")].map(x=>x.value);
+  const res=await api("POST","/api/groups",{name,description:document.getElementById("group-desc").value.trim(),member_ids});
+  if(res.error){alert(res.error);return;}
+  document.getElementById("group-modal").style.display="none";
+  await loadGroups();
+  socket.emit("join_group",{groupId:res.group.id});
+  openGroupChat(res.group.id);
+});
+
+// ══════════════════════════════════════════════════════════
+//  USER PREVIEW
+// ══════════════════════════════════════════════════════════
+function showPV(uid){
+  const f=friends.find(x=>x.id===uid);if(!f) return;
+  document.getElementById("pv-body").innerHTML=`
+    <div class="pv-av" style="background:${avBg(f)}">${mkAv(f)}</div>
+    <div class="pv-name">${esc(f.display_name)}</div>
+    <div class="pv-phone">📱 ${fmtPhone(f.phone_number)}</div>
+    ${f.bio?`<div class="pv-bio">"${esc(f.bio)}"</div>`:""}
+    <div class="pv-acts">
+      <button class="pvb pri" onclick="openChat(friends.find(x=>x.id==='${f.id}'));document.getElementById('pv-modal').style.display='none'">💬 Mesaj</button>
+      <button class="pvb dan" onclick="removeF('${f.id}')">🗑 Sil</button>
+    </div>`;
+  document.getElementById("pv-modal").style.display="flex";
+}
+
+async function removeF(uid){
+  if(!confirm("Arkadaşlıktan çıkar?")) return;
+  await api("DELETE","/api/friends/"+uid);
+  document.getElementById("pv-modal").style.display="none";
+  await loadFriends();
+  if(activeChat?.id===uid){
+    activeChat=null;
+    ["chat-header","messages","input-bar"].forEach(id=>document.getElementById(id).style.display="none");
+    document.getElementById("no-chat").style.display="flex";
+    document.getElementById("sidebar").classList.remove("hidden");
+    document.getElementById("chat-panel").classList.remove("show");
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  PICKERS HELPERS
+// ══════════════════════════════════════════════════════════
+function closePickerPopups(){
+  document.getElementById("emoji-picker-popup").classList.remove("open");
+  document.getElementById("sticker-picker-popup").classList.remove("open");
+  emojiPickerOpen=false;stickerPickerOpen=false;
+}
+
+document.getElementById("emoji-btn").addEventListener("click",e=>{
+  e.stopPropagation();
+  emojiPickerOpen=!emojiPickerOpen;
+  document.getElementById("emoji-picker-popup").classList.toggle("open",emojiPickerOpen);
+  document.getElementById("sticker-picker-popup").classList.remove("open");stickerPickerOpen=false;
+});
+
+document.getElementById("sticker-btn").addEventListener("click",e=>{
+  e.stopPropagation();
+  stickerPickerOpen=!stickerPickerOpen;
+  document.getElementById("sticker-picker-popup").classList.toggle("open",stickerPickerOpen);
+  document.getElementById("emoji-picker-popup").classList.remove("open");emojiPickerOpen=false;
+});
+
+document.addEventListener("click",e=>{
+  if(!e.target.closest("#emoji-picker-popup")&&!e.target.closest("#emoji-btn")) {
+    document.getElementById("emoji-picker-popup").classList.remove("open");emojiPickerOpen=false;
+  }
+  if(!e.target.closest("#sticker-picker-popup")&&!e.target.closest("#sticker-btn")) {
+    document.getElementById("sticker-picker-popup").classList.remove("open");stickerPickerOpen=false;
+  }
+});
+
+// Open sticker creator
+document.getElementById("open-sticker-create").addEventListener("click",()=>{
+  document.getElementById("sticker-picker-popup").classList.remove("open");
+  document.getElementById("sticker-create-modal").style.display="flex";
+  initStickerCanvas();
+});
+
+// Sticker canvas controls
+document.getElementById("sc-pen").addEventListener("click",function(){
+  scTool="pen";document.querySelectorAll(".sc-tool").forEach(x=>x.classList.remove("on"));this.classList.add("on");
+  document.getElementById("sc-text-row").style.display="none";
+});
+document.getElementById("sc-eraser").addEventListener("click",function(){
+  scTool="eraser";document.querySelectorAll(".sc-tool").forEach(x=>x.classList.remove("on"));this.classList.add("on");
+  document.getElementById("sc-text-row").style.display="none";
+});
+document.getElementById("sc-text-tool").addEventListener("click",function(){
+  scTool="text";document.querySelectorAll(".sc-tool").forEach(x=>x.classList.remove("on"));this.classList.add("on");
+  document.getElementById("sc-text-row").style.display="flex";
+});
+document.getElementById("sc-clear").addEventListener("click",()=>{
+  const canvas=document.getElementById("sticker-canvas");
+  const ctx=canvas.getContext("2d");resetCanvas(ctx);
+});
+document.getElementById("sc-size").addEventListener("input",function(){
+  document.getElementById("sc-size-val").textContent=this.value;
+});
+document.getElementById("sc-bg-color").addEventListener("input",()=>{
+  scTransparentBg=false;
+  const canvas=document.getElementById("sticker-canvas");
+  // don't auto-reset, just store color
+});
+document.getElementById("sc-bg-transparent").addEventListener("click",()=>{
+  scTransparentBg=true;
+  const canvas=document.getElementById("sticker-canvas");
+  const ctx=canvas.getContext("2d");
+  const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+  const bgColor=hexToRgb(document.getElementById("sc-bg-color").value);
+  if(bgColor){
+    for(let i=0;i<imgData.data.length;i+=4){
+      const r=imgData.data[i],g=imgData.data[i+1],b=imgData.data[i+2];
+      if(Math.abs(r-bgColor.r)<30&&Math.abs(g-bgColor.g)<30&&Math.abs(b-bgColor.b)<30)
+        imgData.data[i+3]=0;
+    }
+    ctx.putImageData(imgData,0,0);
+  }
+});
+function hexToRgb(hex){
+  const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return r?{r:parseInt(r[1],16),g:parseInt(r[2],16),b:parseInt(r[3],16)}:null;
+}
+document.getElementById("sc-add-text").addEventListener("click",()=>{
+  const text=document.getElementById("sc-text-input").value.trim();if(!text) return;
+  const canvas=document.getElementById("sticker-canvas");const ctx=canvas.getContext("2d");
+  ctx.font=`${document.getElementById("sc-size").value*3}px sans-serif`;
+  ctx.fillStyle=document.getElementById("sc-color").value;
+  ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(text,canvas.width/2,canvas.height/2);
+  document.getElementById("sc-text-input").value="";
+});
+document.getElementById("sc-save-btn").addEventListener("click",()=>{
+  const canvas=document.getElementById("sticker-canvas");
+  // Scale down to 150x150
+  const out=document.createElement("canvas");out.width=150;out.height=150;
+  out.getContext("2d").drawImage(canvas,0,0,150,150);
+  const dataUrl=out.toDataURL("image/png");
+  stickers.push({id:Date.now().toString(),dataUrl});
+  saveStickers();renderStickerGrid();
+  document.getElementById("sticker-create-modal").style.display="none";
+});
+
+// ══════════════════════════════════════════════════════════
+//  TABS + MODALS + EVENTS
+// ══════════════════════════════════════════════════════════
+document.querySelectorAll(".stab").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".stab").forEach(b=>b.classList.remove("on"));btn.classList.add("on");
+    const t=btn.dataset.tab;
+    document.getElementById("tab-chats").style.display=t==="chats"?"flex":"none";
+    document.getElementById("tab-friends").style.display=t==="friends"?"block":"none";
+  });
+});
+
+document.querySelectorAll(".mo-close").forEach(btn=>{
+  btn.addEventListener("click",()=>{document.getElementById(btn.dataset.close).style.display="none";});
+});
+document.querySelectorAll(".mo").forEach(mo=>{
+  mo.addEventListener("click",e=>{if(e.target===mo) mo.style.display="none";});
+});
+
+document.getElementById("my-av-btn").addEventListener("click",openProfile);
+document.getElementById("add-friend-btn").addEventListener("click",()=>{
+  document.getElementById("friend-phone").value="";
+  document.getElementById("friend-result").innerHTML="";
+  document.getElementById("add-modal").style.display="flex";
+});
+document.getElementById("logout-btn").addEventListener("click",async()=>{
+  await api("POST","/api/logout");location.href="/login";
+});
+
+document.getElementById("send-btn").addEventListener("click",sendMsg);
+document.getElementById("msg-input").addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMsg();}
+});
+document.getElementById("msg-input").addEventListener("input",function(){
+  this.style.height="auto";this.style.height=Math.min(this.scrollHeight,110)+"px";
+  if(!activeChat) return;
+  if(activeChat.isGroup) socket.emit("group_typing",{groupId:activeChat.id,isTyping:true});
+  else socket.emit("typing",{to:activeChat.id,isTyping:true});
+  clearTimeout(typingTimers[activeChat.id]);
+  typingTimers[activeChat.id]=setTimeout(()=>{
+    if(activeChat?.isGroup) socket.emit("group_typing",{groupId:activeChat.id,isTyping:false});
+    else socket.emit("typing",{to:activeChat.id,isTyping:false});
+  },2000);
+});
+
+document.getElementById("back-btn").addEventListener("click",()=>{
+  document.getElementById("sidebar").classList.remove("hidden");
+  document.getElementById("chat-panel").classList.remove("show");
+  activeChat=null;closePickerPopups();
+});
+
+document.getElementById("ch-av").addEventListener("click",()=>activeChat&&!activeChat.isGroup&&showPV(activeChat.id));
+document.getElementById("ch-info").addEventListener("click",()=>activeChat&&!activeChat.isGroup&&showPV(activeChat.id));
+
+document.getElementById("audio-call-btn").addEventListener("click",()=>{
+  if(!activeChat||activeChat.isGroup) return;
+  callType="audio";
+  socket.emit("call_user",{to:activeChat.id,callType:"audio"});
+  openCallOverlay(activeChat,"Çağrılıyor...","audio");
+});
+document.getElementById("video-call-btn").addEventListener("click",()=>{
+  if(!activeChat||activeChat.isGroup) return;
+  callType="video";
+  socket.emit("call_user",{to:activeChat.id,callType:"video"});
+  openCallOverlay(activeChat,"Çağrılıyor...","video");
+  navigator.mediaDevices.getUserMedia({
+    audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,sampleRate:48000},
+    video:{width:{ideal:1920,min:1280},height:{ideal:1080,min:720},frameRate:{ideal:30,min:15},facingMode:currentFacingMode}
+  }).then(s=>{
+    localStream=s;const lv=document.getElementById("local-video");lv.srcObject=s;lv.classList.add("show");
+  }).catch(()=>{});
+});
+
+document.getElementById("cbtn-end").addEventListener("click",()=>{
+  if(activeCallId) socket.emit("end_call",{callId:activeCallId});
+  endCallUI();
+});
+document.getElementById("cbtn-mute").addEventListener("click",function(){
+  isMuted=!isMuted;localStream?.getAudioTracks().forEach(t=>t.enabled=!isMuted);
+  document.getElementById("icon-mic-on").style.display=isMuted?"none":"";
+  document.getElementById("icon-mic-off").style.display=isMuted?"":"none";
+  this.classList.toggle("muted",isMuted);
+  this.querySelector(".cbtn-label").textContent=isMuted?"Sesi Aç":"Sessiz";
+});
+document.getElementById("cbtn-vid").addEventListener("click",function(){
+  isCamOff=!isCamOff;localStream?.getVideoTracks().forEach(t=>t.enabled=!isCamOff);
+  document.getElementById("icon-cam-on").style.display=isCamOff?"none":"";
+  document.getElementById("icon-cam-off").style.display=isCamOff?"":"none";
+  this.classList.toggle("off",isCamOff);
+  this.querySelector(".cbtn-label").textContent=isCamOff?"Kamerayı Aç":"Kamera";
+});
+document.getElementById("cbtn-flip").addEventListener("click",async function(){
+  if(!localStream||callType!=="video") return;
+  currentFacingMode=currentFacingMode==="user"?"environment":"user";
+  localStream.getVideoTracks().forEach(t=>t.stop());
+  try{
+    const ns=await navigator.mediaDevices.getUserMedia({audio:false,video:{width:{ideal:1920,min:1280},height:{ideal:1080,min:720},frameRate:{ideal:30,min:15},facingMode:currentFacingMode}});
+    const nt=ns.getVideoTracks()[0];
+    if(pc){const sender=pc.getSenders().find(s=>s.track?.kind==="video");if(sender) await sender.replaceTrack(nt);}
+    localStream.getVideoTracks().forEach(t=>localStream.removeTrack(t));localStream.addTrack(nt);
+    const lv=document.getElementById("local-video");lv.srcObject=null;lv.srcObject=localStream;
+    this.style.transform="scale(.88) rotate(180deg)";setTimeout(()=>this.style.transform="",300);
+  }catch(e){console.error(e);}
+});
+document.getElementById("cbtn-screen").addEventListener("click",toggleScreenShare);
+
+document.getElementById("cbtn-chat").addEventListener("click",function(){
+  const panel=document.getElementById("incall-chat");const isOpen=panel.classList.toggle("open");
+  this.classList.toggle("active",isOpen);
+  if(isOpen){document.getElementById("incall-chat-name").textContent=(activeChat?.display_name||"")+" ile Mesajlar";document.getElementById("incall-msg-input").focus();}
+});
+document.getElementById("incall-chat-close").addEventListener("click",()=>{
+  document.getElementById("incall-chat").classList.remove("open");
+  document.getElementById("cbtn-chat").classList.remove("active");
+});
+document.getElementById("incall-send-btn").addEventListener("click",sendInCallMsg);
+document.getElementById("incall-msg-input").addEventListener("keydown",e=>{if(e.key==="Enter") sendInCallMsg();});
+document.getElementById("friend-phone").addEventListener("keydown",e=>{if(e.key==="Enter") document.getElementById("search-friend-btn").click();});
+document.getElementById("search-input").addEventListener("input",function(){
+  const q=this.value.toLowerCase();
+  document.querySelectorAll("#chats-list .ci").forEach(el=>{
+    el.style.display=el.querySelector(".ci-name")?.textContent.toLowerCase().includes(q)?"flex":"none";
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════════
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br/>");}
+function fmtT(ts){const d=new Date(ts);return d.getHours().toString().padStart(2,"0")+":"+d.getMinutes().toString().padStart(2,"0");}
+function fmtD(ts){
+  const d=new Date(ts),t=new Date();
+  if(d.toDateString()===t.toDateString()) return "Bugün";
+  const y=new Date(t);y.setDate(t.getDate()-1);
+  if(d.toDateString()===y.toDateString()) return "Dün";
+  return d.toLocaleDateString("tr-TR");
+}
+function fmtPhone(p){if(!p) return "";return `+90 ${p.slice(0,3)} ${p.slice(3,6)} ${p.slice(6,8)} ${p.slice(8)}`;}
+
+init();
+</script>
+</body>
+</html>
