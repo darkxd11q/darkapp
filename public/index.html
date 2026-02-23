@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html><head><meta http-equiv="refresh" content="0;url=/app.html"/></head>
+<body><script>
+fetch("/api/me").then(r=>{
+  if(r.status===401) location.href="/login.html";
+  else location.href="/app.html";
+});
+</script></body></html>
