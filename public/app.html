@@ -113,8 +113,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
 #ch-info{flex:1;min-width:0;cursor:pointer;}
 #ch-name{font-size:.93rem;font-weight:600;}
 #ch-sub{color:var(--text-muted);font-size:.76rem;margin-top:2px;}
-.call-icon-btn{background:none;border:none;color:var(--text-muted);font-size:1.25rem;cursor:pointer;padding:8px;border-radius:50%;transition:background .15s;}
-.call-icon-btn:hover{background:var(--bg-input);}
+.call-icon-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:7px;border-radius:50%;transition:background .15s,color .15s;width:36px;height:36px;display:flex;align-items:center;justify-content:center;}
+.call-icon-btn svg{width:18px;height:18px;}
+.call-icon-btn:hover{background:var(--bg-input);color:var(--accent);}
 
 /* Chat search bar */
 #chat-search-bar{background:var(--bg-head);padding:8px 14px;display:none;align-items:center;gap:8px;flex-shrink:0;border-top:1px solid var(--border);}
@@ -157,8 +158,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
 #typing-bar{padding:3px 15px;color:var(--text-muted);font-size:.77rem;min-height:22px;position:relative;z-index:1;flex-shrink:0;}
 
 #input-bar{background:var(--bg-head);padding:8px 12px;display:flex;align-items:flex-end;gap:9px;position:relative;z-index:10;flex-shrink:0;}
-.input-action-btn{background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;
-  padding:5px;border-radius:50%;transition:background .15s,color .15s;flex-shrink:0;}
+.input-action-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;
+  padding:7px;border-radius:50%;transition:background .15s,color .15s;flex-shrink:0;
+  width:38px;height:38px;display:flex;align-items:center;justify-content:center;}
+.input-action-btn svg{width:20px;height:20px;stroke:currentColor;transition:stroke .15s;}
 .input-action-btn:hover{background:var(--bg-input);color:var(--text);}
 .input-action-btn.recording{color:#f13838;animation:pulse .8s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
@@ -166,7 +169,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
   color:var(--text);font-size:.92rem;outline:none;resize:none;max-height:110px;overflow-y:auto;line-height:1.4;}
 #msg-input::placeholder{color:var(--text-muted);}
 #send-btn{background:var(--accent);border:none;width:44px;height:44px;border-radius:50%;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;transition:background .15s;}
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;color:#fff;}
+#send-btn svg{width:20px;height:20px;}
 #send-btn:hover{background:var(--accent2);}
 
 /* ══ EMOJI PICKER ═════════════════════════════════════════ */
@@ -394,6 +398,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
 .status-photo-del{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:26px;height:26px;cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;}
 .status-photo-add{width:100%;padding:10px;border:2px dashed var(--border);border-radius:10px;background:none;color:var(--text-muted);cursor:pointer;font-size:.85rem;transition:border-color .15s;margin-bottom:10px;}
 .status-photo-add:hover{border-color:var(--accent);color:var(--text);}
+
+/* ══ UNIFIED PICKER TABS ═══════════════════════════════ */
+.ep-tabs{display:flex;gap:4px;padding:8px 8px 0;border-bottom:1px solid var(--border);margin-bottom:4px;}
+.ep-tab-btn{flex:1;padding:7px 10px;border:none;border-radius:8px 8px 0 0;background:none;
+  color:var(--text-muted);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.ep-tab-btn.active{background:var(--accent);color:#fff;}
+.ep-tab-btn:hover:not(.active){background:var(--bg-input);color:var(--text);}
 </style>
 </head>
 <body>
@@ -433,10 +444,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
       <button id="back-btn">‹</button>
       <div id="ch-av"></div>
       <div id="ch-info"><div id="ch-name"></div><div id="ch-sub"></div></div>
-      <button class="call-icon-btn" id="chat-search-btn" title="Mesajlarda Ara">🔍</button>
+      <button class="call-icon-btn" id="chat-search-btn" title="Mesajlarda Ara">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
       <button class="call-icon-btn" id="call-history-btn" title="Arama Geçmişi" style="display:none;">📋</button>
-      <button class="call-icon-btn" id="audio-call-btn" title="Sesli Ara">📞</button>
-      <button class="call-icon-btn" id="video-call-btn" title="Görüntülü Ara">🎥</button>
+      <button class="call-icon-btn" id="audio-call-btn" title="Sesli Ara">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </button>
+      <button class="call-icon-btn" id="video-call-btn" title="Görüntülü Ara">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      </button>
     </div>
     <div id="chat-search-bar">
       <input type="text" id="chat-search-input" placeholder="Mesajlarda ara..."/>
@@ -446,24 +463,36 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
     <div id="messages" style="display:none;"></div>
     <div id="typing-bar"></div>
     <div id="input-bar" style="display:none;">
-      <button class="input-action-btn" id="emoji-btn" title="Emoji">😊</button>
-      <button class="input-action-btn" id="sticker-btn" title="Sticker">🎭</button>
-      <button class="input-action-btn" id="photo-btn" title="Fotoğraf">📷</button>
-      <button class="input-action-btn" id="voice-btn" title="Sesli mesaj">🎙</button>
+      <button class="input-action-btn" id="emoji-btn" title="Emoji & Sticker">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+      </button>
+      <button class="input-action-btn" id="photo-btn" title="Fotoğraf">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M8.5 5V3.5A.5.5 0 0 1 9 3h6a.5.5 0 0 1 .5.5V5"/></svg>
+      </button>
+      <button class="input-action-btn" id="voice-btn" title="Sesli mesaj">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
       <input type="file" id="photo-input" accept="image/*" style="display:none"/>
       <textarea id="msg-input" placeholder="Mesaj yaz..." rows="1"></textarea>
-      <button id="send-btn">➤</button>
+      <button id="send-btn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
     </div>
-    <!-- Emoji Picker -->
+    <!-- Unified Emoji+Sticker Picker -->
     <div id="emoji-picker-popup">
-      <div class="ep-search"><input type="text" id="ep-search" placeholder="Emoji ara..."/></div>
-      <div class="ep-cats" id="ep-cats"></div>
-      <div class="ep-grid" id="ep-grid"></div>
-    </div>
-    <!-- Sticker Picker -->
-    <div id="sticker-picker-popup">
-      <div class="sp-head"><span>🎭 Stickerlarım</span><button class="sp-create-btn" id="open-sticker-create">+ Oluştur</button></div>
-      <div class="sp-grid" id="sp-grid"><div class="sp-empty">Henüz sticker yok!</div></div>
+      <div class="ep-tabs">
+        <button class="ep-tab-btn active" id="ep-tab-emoji">Emoji</button>
+        <button class="ep-tab-btn" id="ep-tab-sticker">Sticker</button>
+      </div>
+      <div id="ep-panel-emoji">
+        <div class="ep-search"><input type="text" id="ep-search" placeholder="Emoji ara..."/></div>
+        <div class="ep-cats" id="ep-cats"></div>
+        <div class="ep-grid" id="ep-grid"></div>
+      </div>
+      <div id="ep-panel-sticker" style="display:none;">
+        <div class="sp-head"><span style="font-size:.88rem;font-weight:600;color:var(--text)">Stickerlarım</span><button class="sp-create-btn" id="open-sticker-create">+ Oluştur</button></div>
+        <div class="sp-grid" id="sp-grid"><div class="sp-empty">Henüz sticker yok!</div></div>
+      </div>
     </div>
   </div>
 </div>
@@ -606,9 +635,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
       </div>
       <div class="mpp-item" onclick="openStatusFromProfile()">
         <span class="mpp-item-icon">💬</span>Durum Güncelle
-      </div>
-      <div class="mpp-item" onclick="openThemeFromProfile()">
-        <span class="mpp-item-icon">🎨</span>Tema Değiştir
       </div>
       <div class="mpp-sep"></div>
       <div class="mpp-item danger" onclick="doLogout()">
@@ -1102,7 +1128,7 @@ function sendMsg(){
   const inp=document.getElementById("msg-input"),text=inp.value.trim();
   if(!text||!activeChat)return;
   if(activeChat.isGroup)socket.emit("send_group_message",{groupId:activeChat.id,text});
-  else socket.emit("send_message",{to:activeChat.id,text});
+  else socket.emit("send_message",{to:activeChat.id,text,type:"text"});
   inp.value="";inp.style.height="auto";
   if(!activeChat.isGroup)socket.emit("typing",{to:activeChat.id,isTyping:false});
   else socket.emit("group_typing",{groupId:activeChat.id,isTyping:false});
@@ -1509,10 +1535,7 @@ function openStatusFromProfile(){
   document.getElementById("my-profile-modal").style.display="none";
   openStatusModal();
 }
-function openThemeFromProfile(){
-  document.getElementById("my-profile-modal").style.display="none";
-  document.getElementById("theme-modal").style.display="flex";
-}
+
 async function doLogout(){
   document.getElementById("my-profile-modal").style.display="none";
   await api("POST","/api/logout");location.href="/login";
@@ -1589,12 +1612,35 @@ async function removeF(uid){
 // ══ PICKERS HELPERS ═════════════════════════════════════════
 function closePickerPopups(){
   document.getElementById("emoji-picker-popup").classList.remove("open");
-  document.getElementById("sticker-picker-popup").classList.remove("open");
 }
-document.getElementById("emoji-btn").addEventListener("click",e=>{e.stopPropagation();document.getElementById("emoji-picker-popup").classList.toggle("open");document.getElementById("sticker-picker-popup").classList.remove("open");});
-document.getElementById("sticker-btn").addEventListener("click",e=>{e.stopPropagation();document.getElementById("sticker-picker-popup").classList.toggle("open");document.getElementById("emoji-picker-popup").classList.remove("open");});
-document.addEventListener("click",e=>{if(!e.target.closest("#emoji-picker-popup")&&!e.target.closest("#emoji-btn"))document.getElementById("emoji-picker-popup").classList.remove("open");if(!e.target.closest("#sticker-picker-popup")&&!e.target.closest("#sticker-btn"))document.getElementById("sticker-picker-popup").classList.remove("open");});
-document.getElementById("open-sticker-create").addEventListener("click",()=>{document.getElementById("sticker-picker-popup").classList.remove("open");document.getElementById("sticker-create-modal").style.display="flex";initStickerCanvas();});
+// ── UNIFIED EMOJI+STICKER PICKER ──────────────────────────
+document.getElementById("emoji-btn").addEventListener("click",e=>{
+  e.stopPropagation();
+  document.getElementById("emoji-picker-popup").classList.toggle("open");
+});
+document.addEventListener("click",e=>{
+  if(!e.target.closest("#emoji-picker-popup")&&!e.target.closest("#emoji-btn"))
+    document.getElementById("emoji-picker-popup").classList.remove("open");
+});
+// Emoji / Sticker tab switching inside unified picker
+document.getElementById("ep-tab-emoji").addEventListener("click",()=>{
+  document.getElementById("ep-panel-emoji").style.display="";
+  document.getElementById("ep-panel-sticker").style.display="none";
+  document.getElementById("ep-tab-emoji").classList.add("active");
+  document.getElementById("ep-tab-sticker").classList.remove("active");
+});
+document.getElementById("ep-tab-sticker").addEventListener("click",()=>{
+  document.getElementById("ep-panel-emoji").style.display="none";
+  document.getElementById("ep-panel-sticker").style.display="";
+  document.getElementById("ep-tab-sticker").classList.add("active");
+  document.getElementById("ep-tab-emoji").classList.remove("active");
+  buildStickerGrid();
+});
+document.getElementById("open-sticker-create").addEventListener("click",()=>{
+  document.getElementById("emoji-picker-popup").classList.remove("open");
+  document.getElementById("sticker-create-modal").style.display="flex";
+  initStickerCanvas();
+});
 
 // ══ CALL CONTROLS ═══════════════════════════════════════════
 document.getElementById("cbtn-end").addEventListener("click",()=>{if(activeCallId)socket.emit("end_call",{callId:activeCallId});endCallUI(callSeconds);});

@@ -645,14 +645,13 @@ io.on("connection", (socket) => {
     if (!socketRateLimit(userId)) return;
     const cleanText = sanitizeText(text || "", type === "image" || type === "audio" ? 512 : 5000);
     if (!cleanText) return;
-    const validTypes = ["text","image","audio","sticker","call"];
-    if (!validTypes.includes(type)) return;
+    const msgType = ["text","image","audio","sticker","call"].includes(type) ? type : "text";
     const fs_ = db.prepare(`SELECT id FROM friendships WHERE
       ((requester_id=? AND addressee_id=?) OR (requester_id=? AND addressee_id=?))
       AND status='accepted'`).get(userId, to, to, userId);
     if (!fs_) return;
     const msg = { id: uuid(), from_id: userId, to_id: to, group_id: null,
-      text: cleanText, type: type || "text", time: Date.now(), read: 0, read_at: null };
+      text: cleanText, type: msgType, time: Date.now(), read: 0, read_at: null };
     db.prepare("INSERT INTO messages VALUES (?,?,?,?,?,?,?,?,?)")
       .run(msg.id, msg.from_id, msg.to_id, msg.group_id, msg.text, msg.type, msg.time, msg.read, msg.read_at);
     emitTo(to, "new_message", msg);
@@ -666,7 +665,7 @@ io.on("connection", (socket) => {
     const mem = db.prepare("SELECT * FROM group_members WHERE group_id=? AND user_id=?").get(groupId, userId);
     if (!mem) return;
     const msg = { id: uuid(), from_id: userId, to_id: groupId, group_id: groupId,
-      text: cleanText, type: type || "text", time: Date.now(), read: 0, read_at: null };
+      text: cleanText, type: ["text","image","audio","sticker"].includes(type)?type:"text", time: Date.now(), read: 0, read_at: null };
     db.prepare("INSERT INTO messages VALUES (?,?,?,?,?,?,?,?,?)")
       .run(msg.id, msg.from_id, msg.to_id, msg.group_id, msg.text, msg.type, msg.time, msg.read, msg.read_at);
     io.to("group:" + groupId).emit("new_group_message", {
