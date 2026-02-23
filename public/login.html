@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#111b21"/>
+<title>ChatApp — Giriş</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  min-height:100dvh;background:#111b21;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+.card{
+  background:#202c33;border-radius:20px;
+  padding:44px 36px;width:min(420px,100%);
+  box-shadow:0 24px 60px rgba(0,0,0,.5);
+}
+.logo{text-align:center;font-size:3.2rem;margin-bottom:10px;}
+h1{text-align:center;color:#e9edef;font-size:1.5rem;margin-bottom:4px;}
+.tagline{text-align:center;color:#8696a0;font-size:.85rem;margin-bottom:32px;}
+
+/* Tabs */
+.tabs{display:flex;background:#111b21;border-radius:10px;padding:4px;margin-bottom:28px;}
+.tab{flex:1;padding:10px;background:none;border:none;color:#8696a0;
+  font-size:.9rem;font-weight:600;cursor:pointer;border-radius:8px;transition:all .2s;}
+.tab.active{background:#202c33;color:#00a884;box-shadow:0 2px 8px rgba(0,0,0,.3);}
+
+/* Form */
+.form{display:none;flex-direction:column;gap:14px;}
+.form.active{display:flex;}
+.field-group{display:flex;flex-direction:column;gap:5px;}
+label{color:#8696a0;font-size:.75rem;text-transform:uppercase;letter-spacing:.6px;}
+input{
+  padding:13px 16px;border-radius:10px;
+  border:2px solid #2a3942;background:#2a3942;
+  color:#e9edef;font-size:.95rem;outline:none;
+  transition:border-color .2s;
+}
+input:focus{border-color:#00a884;}
+input::placeholder{color:#4a5568;}
+.submit-btn{
+  margin-top:4px;padding:14px;border-radius:10px;border:none;
+  background:#00a884;color:#fff;font-size:1rem;font-weight:700;
+  cursor:pointer;transition:background .2s;
+}
+.submit-btn:hover{background:#02906f;}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;}
+.err{
+  background:#2d1515;border:1px solid #5c1f1f;border-radius:8px;
+  padding:10px 14px;color:#f87171;font-size:.85rem;display:none;
+}
+.features{
+  display:flex;justify-content:center;gap:24px;margin-top:24px;flex-wrap:wrap;
+}
+.feat{color:#8696a0;font-size:.75rem;display:flex;align-items:center;gap:5px;}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">💬</div>
+  <h1>ChatApp</h1>
+  <p class="tagline">Anlık mesajlaşma & görüntülü arama</p>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-login" onclick="switchTab('login')">Giriş Yap</button>
+    <button class="tab"        id="tab-reg"   onclick="switchTab('reg')">Kayıt Ol</button>
+  </div>
+
+  <!-- GİRİŞ FORMU -->
+  <form class="form active" id="form-login" onsubmit="doLogin(event)">
+    <div class="err" id="login-err"></div>
+    <div class="field-group">
+      <label>E-posta</label>
+      <input type="email" id="login-email" placeholder="ornek@mail.com" required autocomplete="email"/>
+    </div>
+    <div class="field-group">
+      <label>Şifre</label>
+      <input type="password" id="login-pw" placeholder="••••••••" required autocomplete="current-password"/>
+    </div>
+    <button type="submit" class="submit-btn" id="login-btn">Giriş Yap</button>
+  </form>
+
+  <!-- KAYIT FORMU -->
+  <form class="form" id="form-reg" onsubmit="doRegister(event)">
+    <div class="err" id="reg-err"></div>
+    <div class="field-group">
+      <label>Adın</label>
+      <input type="text" id="reg-name" placeholder="Adın Soyadın" required maxlength="32" autocomplete="name"/>
+    </div>
+    <div class="field-group">
+      <label>E-posta</label>
+      <input type="email" id="reg-email" placeholder="ornek@mail.com" required autocomplete="email"/>
+    </div>
+    <div class="field-group">
+      <label>Şifre (en az 6 karakter)</label>
+      <input type="password" id="reg-pw" placeholder="••••••••" required minlength="6" autocomplete="new-password"/>
+    </div>
+    <button type="submit" class="submit-btn" id="reg-btn">Hesap Oluştur</button>
+  </form>
+
+  <div class="features">
+    <div class="feat">🔒 Güvenli</div>
+    <div class="feat">📱 Mobil uyumlu</div>
+    <div class="feat">🎥 Görüntülü arama</div>
+    <div class="feat">⚡ Sıfır gecikme</div>
+  </div>
+</div>
+
+<script>
+function switchTab(tab) {
+  document.getElementById("tab-login").classList.toggle("active", tab==="login");
+  document.getElementById("tab-reg").classList.toggle("active", tab==="reg");
+  document.getElementById("form-login").classList.toggle("active", tab==="login");
+  document.getElementById("form-reg").classList.toggle("active", tab==="reg");
+}
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = "block";
+}
+function hideErr(id) { document.getElementById(id).style.display="none"; }
+
+async function doLogin(e) {
+  e.preventDefault();
+  hideErr("login-err");
+  const btn = document.getElementById("login-btn");
+  btn.disabled = true; btn.textContent = "Giriş yapılıyor...";
+  try {
+    const res = await fetch("/api/login", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ email: document.getElementById("login-email").value, password: document.getElementById("login-pw").value })
+    });
+    const data = await res.json();
+    if (data.ok) { location.href = "/"; return; }
+    showErr("login-err", data.error || "Hata oluştu.");
+  } catch { showErr("login-err", "Sunucuya ulaşılamadı."); }
+  btn.disabled = false; btn.textContent = "Giriş Yap";
+}
+
+async function doRegister(e) {
+  e.preventDefault();
+  hideErr("reg-err");
+  const btn = document.getElementById("reg-btn");
+  btn.disabled = true; btn.textContent = "Kayıt yapılıyor...";
+  try {
+    const res = await fetch("/api/register", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        display_name: document.getElementById("reg-name").value,
+        email:        document.getElementById("reg-email").value,
+        password:     document.getElementById("reg-pw").value,
+      })
+    });
+    const data = await res.json();
+    if (data.ok) { location.href = "/"; return; }
+    showErr("reg-err", data.error || "Hata oluştu.");
+  } catch { showErr("reg-err", "Sunucuya ulaşılamadı."); }
+  btn.disabled = false; btn.textContent = "Hesap Oluştur";
+}
+</script>
+</body>
+</html>
