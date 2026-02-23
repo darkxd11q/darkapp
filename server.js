@@ -227,23 +227,20 @@ const server = http.createServer(app);
 // ── HELMET (security headers) ─────────────────────────────
 if (helmet) {
   app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc:  ["'self'","'unsafe-inline'"],
-        styleSrc:   ["'self'","'unsafe-inline'"],
-        imgSrc:     ["'self'","data:","blob:"],
-        mediaSrc:   ["'self'","blob:"],
-        connectSrc: ["'self'","ws:","wss:"],
-        fontSrc:    ["'self'"],
-        objectSrc:  ["'none'"],
-        frameSrc:   ["'none'"],
-      }
-    },
+    contentSecurityPolicy: false, // Managed manually below
     crossOriginEmbedderPolicy: false,
-    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+    crossOriginOpenerPolicy: false,
   }));
 }
+// Manual security headers - don't break inline scripts
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "camera=self, microphone=self, display-capture=self");
+  next();
+});
 
 // Remove server fingerprint
 app.disable("x-powered-by");

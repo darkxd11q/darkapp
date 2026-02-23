@@ -21,13 +21,14 @@ body{
 h1{text-align:center;color:#e9edef;font-size:1.5rem;margin-bottom:4px;}
 .tagline{text-align:center;color:#8696a0;font-size:.85rem;margin-bottom:32px;}
 
-/* Tabs */
-.tabs{display:flex;background:#111b21;border-radius:10px;padding:4px;margin-bottom:28px;}
-.tab{flex:1;padding:10px;background:none;border:none;color:#8696a0;
-  font-size:.9rem;font-weight:600;cursor:pointer;border-radius:8px;transition:all .2s;}
+.tabs{display:flex;background:#111b21;border-radius:10px;padding:4px;margin-bottom:28px;gap:4px;}
+.tab{
+  flex:1;padding:10px;background:none;border:none;color:#8696a0;
+  font-size:.9rem;font-weight:600;cursor:pointer;border-radius:8px;
+  transition:all .2s;line-height:1.4;
+}
 .tab.active{background:#202c33;color:#00a884;box-shadow:0 2px 8px rgba(0,0,0,.3);}
 
-/* Form */
 .form{display:none;flex-direction:column;gap:14px;}
 .form.active{display:flex;}
 .field-group{display:flex;flex-direction:column;gap:5px;}
@@ -36,14 +37,14 @@ input{
   padding:13px 16px;border-radius:10px;
   border:2px solid #2a3942;background:#2a3942;
   color:#e9edef;font-size:.95rem;outline:none;
-  transition:border-color .2s;
+  transition:border-color .2s;width:100%;
 }
 input:focus{border-color:#00a884;}
 input::placeholder{color:#4a5568;}
 .submit-btn{
   margin-top:4px;padding:14px;border-radius:10px;border:none;
   background:#00a884;color:#fff;font-size:1rem;font-weight:700;
-  cursor:pointer;transition:background .2s;
+  cursor:pointer;transition:background .2s;width:100%;
 }
 .submit-btn:hover{background:#02906f;}
 .submit-btn:disabled{opacity:.5;cursor:not-allowed;}
@@ -61,44 +62,42 @@ input::placeholder{color:#4a5568;}
 <div class="card">
   <div class="logo">💬</div>
   <h1>ChatApp</h1>
-  <p class="tagline">Anlık mesajlaşma & görüntülü arama</p>
+  <p class="tagline">Anlık mesajlaşma &amp; görüntülü arama</p>
 
   <div class="tabs">
-    <button class="tab active" id="tab-login" onclick="switchTab('login')">Giriş Yap</button>
-    <button class="tab"        id="tab-reg"   onclick="switchTab('reg')">Kayıt Ol</button>
+    <button class="tab active" id="tab-login">Giriş Yap</button>
+    <button class="tab"        id="tab-reg">Kayıt Ol</button>
   </div>
 
-  <!-- GİRİŞ FORMU -->
-  <form class="form active" id="form-login" onsubmit="doLogin(event)">
+  <div class="form active" id="form-login">
     <div class="err" id="login-err"></div>
     <div class="field-group">
-      <label>E-posta</label>
-      <input type="email" id="login-email" placeholder="ornek@mail.com" required autocomplete="email"/>
+      <label for="login-email">E-posta</label>
+      <input type="email" id="login-email" placeholder="ornek@mail.com" autocomplete="email" required/>
     </div>
     <div class="field-group">
-      <label>Şifre</label>
-      <input type="password" id="login-pw" placeholder="••••••••" required autocomplete="current-password"/>
+      <label for="login-pw">Şifre</label>
+      <input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password" required/>
     </div>
-    <button type="submit" class="submit-btn" id="login-btn">Giriş Yap</button>
-  </form>
+    <button class="submit-btn" id="login-btn">Giriş Yap</button>
+  </div>
 
-  <!-- KAYIT FORMU -->
-  <form class="form" id="form-reg" onsubmit="doRegister(event)">
+  <div class="form" id="form-reg">
     <div class="err" id="reg-err"></div>
     <div class="field-group">
-      <label>Adın</label>
-      <input type="text" id="reg-name" placeholder="Adın Soyadın" required maxlength="32" autocomplete="name"/>
+      <label for="reg-name">Adın</label>
+      <input type="text" id="reg-name" placeholder="Adın Soyadın" maxlength="32" autocomplete="name" required/>
     </div>
     <div class="field-group">
-      <label>E-posta</label>
-      <input type="email" id="reg-email" placeholder="ornek@mail.com" required autocomplete="email"/>
+      <label for="reg-email">E-posta</label>
+      <input type="email" id="reg-email" placeholder="ornek@mail.com" autocomplete="email" required/>
     </div>
     <div class="field-group">
-      <label>Şifre (en az 6 karakter)</label>
-      <input type="password" id="reg-pw" placeholder="••••••••" required minlength="6" autocomplete="new-password"/>
+      <label for="reg-pw">Şifre (en az 6 karakter)</label>
+      <input type="password" id="reg-pw" placeholder="••••••••" minlength="6" autocomplete="new-password" required/>
     </div>
-    <button type="submit" class="submit-btn" id="reg-btn">Hesap Oluştur</button>
-  </form>
+    <button class="submit-btn" id="reg-btn">Hesap Oluştur</button>
+  </div>
 
   <div class="features">
     <div class="feat">🔒 Güvenli</div>
@@ -109,57 +108,119 @@ input::placeholder{color:#4a5568;}
 </div>
 
 <script>
-function switchTab(tab) {
-  document.getElementById("tab-login").classList.toggle("active", tab==="login");
-  document.getElementById("tab-reg").classList.toggle("active", tab==="reg");
-  document.getElementById("form-login").classList.toggle("active", tab==="login");
-  document.getElementById("form-reg").classList.toggle("active", tab==="reg");
-}
+(function () {
+  // Tab switching
+  document.getElementById('tab-login').addEventListener('click', function () {
+    switchTab('login');
+  });
+  document.getElementById('tab-reg').addEventListener('click', function () {
+    switchTab('reg');
+  });
 
-function showErr(id, msg) {
-  const el = document.getElementById(id);
-  el.textContent = msg;
-  el.style.display = "block";
-}
-function hideErr(id) { document.getElementById(id).style.display="none"; }
+  function switchTab(tab) {
+    var isLogin = tab === 'login';
+    document.getElementById('tab-login').classList.toggle('active', isLogin);
+    document.getElementById('tab-reg').classList.toggle('active', !isLogin);
+    document.getElementById('form-login').classList.toggle('active', isLogin);
+    document.getElementById('form-reg').classList.toggle('active', !isLogin);
+  }
 
-async function doLogin(e) {
-  e.preventDefault();
-  hideErr("login-err");
-  const btn = document.getElementById("login-btn");
-  btn.disabled = true; btn.textContent = "Giriş yapılıyor...";
-  try {
-    const res = await fetch("/api/login", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({ email: document.getElementById("login-email").value, password: document.getElementById("login-pw").value })
+  function showErr(id, msg) {
+    var el = document.getElementById(id);
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function hideErr(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+
+  // Enter key on login fields
+  ['login-email', 'login-pw'].forEach(function (id) {
+    document.getElementById(id).addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') doLogin();
     });
-    const data = await res.json();
-    if (data.ok) { location.href = "/"; return; }
-    showErr("login-err", data.error || "Hata oluştu.");
-  } catch { showErr("login-err", "Sunucuya ulaşılamadı."); }
-  btn.disabled = false; btn.textContent = "Giriş Yap";
-}
+  });
 
-async function doRegister(e) {
-  e.preventDefault();
-  hideErr("reg-err");
-  const btn = document.getElementById("reg-btn");
-  btn.disabled = true; btn.textContent = "Kayıt yapılıyor...";
-  try {
-    const res = await fetch("/api/register", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        display_name: document.getElementById("reg-name").value,
-        email:        document.getElementById("reg-email").value,
-        password:     document.getElementById("reg-pw").value,
-      })
+  // Enter key on register fields
+  ['reg-name', 'reg-email', 'reg-pw'].forEach(function (id) {
+    document.getElementById(id).addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') doRegister();
     });
-    const data = await res.json();
-    if (data.ok) { location.href = "/"; return; }
-    showErr("reg-err", data.error || "Hata oluştu.");
-  } catch { showErr("reg-err", "Sunucuya ulaşılamadı."); }
-  btn.disabled = false; btn.textContent = "Hesap Oluştur";
-}
+  });
+
+  // Login button
+  document.getElementById('login-btn').addEventListener('click', doLogin);
+
+  // Register button
+  document.getElementById('reg-btn').addEventListener('click', doRegister);
+
+  async function doLogin() {
+    hideErr('login-err');
+    var btn   = document.getElementById('login-btn');
+    var email = document.getElementById('login-email').value.trim();
+    var pw    = document.getElementById('login-pw').value;
+
+    if (!email || !pw) {
+      showErr('login-err', 'E-posta ve şifre girin.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Giriş yapılıyor...';
+
+    try {
+      var res  = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: pw })
+      });
+      var data = await res.json();
+      if (data.ok) { location.href = '/'; return; }
+      showErr('login-err', data.error || 'Giriş başarısız.');
+    } catch (e) {
+      showErr('login-err', 'Sunucuya ulaşılamadı.');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Giriş Yap';
+  }
+
+  async function doRegister() {
+    hideErr('reg-err');
+    var btn   = document.getElementById('reg-btn');
+    var name  = document.getElementById('reg-name').value.trim();
+    var email = document.getElementById('reg-email').value.trim();
+    var pw    = document.getElementById('reg-pw').value;
+
+    if (!name || !email || !pw) {
+      showErr('reg-err', 'Tüm alanları doldurun.');
+      return;
+    }
+    if (pw.length < 6) {
+      showErr('reg-err', 'Şifre en az 6 karakter olmalı.');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Kayıt yapılıyor...';
+
+    try {
+      var res  = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ display_name: name, email: email, password: pw })
+      });
+      var data = await res.json();
+      if (data.ok) { location.href = '/'; return; }
+      showErr('reg-err', data.error || 'Kayıt başarısız.');
+    } catch (e) {
+      showErr('reg-err', 'Sunucuya ulaşılamadı.');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Hesap Oluştur';
+  }
+}());
 </script>
 </body>
 </html>
