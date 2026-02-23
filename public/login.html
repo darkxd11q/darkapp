@@ -96,6 +96,14 @@ input::placeholder{color:#4a5568;}
       <label for="reg-pw">Şifre (en az 6 karakter)</label>
       <input type="password" id="reg-pw" placeholder="••••••••" minlength="6" autocomplete="new-password" required/>
     </div>
+    <div class="field-group">
+      <label for="reg-phone">Telefon Numarası <span style="color:#4a5568;font-weight:400;">(isteğe bağlı)</span></label>
+      <div style="display:flex;gap:7px;align-items:center;">
+        <div style="background:#2a3942;border-radius:10px;padding:13px 12px;color:#8696a0;font-size:.88rem;white-space:nowrap;">📱 +90</div>
+        <input type="tel" id="reg-phone" placeholder="5XX XXX XX XX" maxlength="13" oninput="fmtRegPhone(this)" autocomplete="tel" style="flex:1;"/>
+      </div>
+      <div style="color:#4a5568;font-size:.73rem;margin-top:3px;">Ör: 532 123 45 67 &nbsp;·&nbsp; 505 987 65 43 &nbsp;·&nbsp; 555 000 11 22</div>
+    </div>
     <button class="submit-btn" id="reg-btn">Hesap Oluştur</button>
   </div>
 
@@ -142,7 +150,7 @@ input::placeholder{color:#4a5568;}
   });
 
   // Enter key on register fields
-  ['reg-name', 'reg-email', 'reg-pw'].forEach(function (id) {
+  ['reg-name', 'reg-email', 'reg-pw', 'reg-phone'].forEach(function (id) {
     document.getElementById(id).addEventListener('keydown', function (e) {
       if (e.key === 'Enter') doRegister();
     });
@@ -191,24 +199,32 @@ input::placeholder{color:#4a5568;}
     var name  = document.getElementById('reg-name').value.trim();
     var email = document.getElementById('reg-email').value.trim();
     var pw    = document.getElementById('reg-pw').value;
+    var phoneRaw = document.getElementById('reg-phone').value.replace(/\D/g,'');
 
     if (!name || !email || !pw) {
-      showErr('reg-err', 'Tüm alanları doldurun.');
+      showErr('reg-err', 'Ad, e-posta ve şifre zorunludur.');
       return;
     }
     if (pw.length < 6) {
       showErr('reg-err', 'Şifre en az 6 karakter olmalı.');
       return;
     }
+    if (phoneRaw && (phoneRaw.length !== 10 || !phoneRaw.startsWith('5'))) {
+      showErr('reg-err', 'Telefon numarası 10 haneli olmalı ve 5 ile başlamalı (ör. 532 123 45 67).');
+      return;
+    }
 
     btn.disabled = true;
     btn.textContent = 'Kayıt yapılıyor...';
+
+    var body = { display_name: name, email: email, password: pw };
+    if (phoneRaw) body.phone_number = phoneRaw;
 
     try {
       var res  = await fetch('/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ display_name: name, email: email, password: pw })
+        body: JSON.stringify(body)
       });
       var data = await res.json();
       if (data.ok) { location.href = '/'; return; }
@@ -221,6 +237,14 @@ input::placeholder{color:#4a5568;}
     btn.textContent = 'Hesap Oluştur';
   }
 }());
+
+function fmtRegPhone(input){
+  var v=input.value.replace(/\D/g,'').slice(0,10);
+  if(v.length>8)      v=v.slice(0,3)+' '+v.slice(3,6)+' '+v.slice(6,8)+' '+v.slice(8);
+  else if(v.length>6) v=v.slice(0,3)+' '+v.slice(3,6)+' '+v.slice(6);
+  else if(v.length>3) v=v.slice(0,3)+' '+v.slice(3);
+  input.value=v;
+}
 </script>
 </body>
 </html>

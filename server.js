@@ -311,6 +311,7 @@ app.post("/api/register", authLimiter, async (req, res) => {
   const email        = sanitizeText(req.body.email || "", 254).trim().toLowerCase();
   const display_name = sanitizeText(req.body.display_name || "", 32).trim();
   const password     = req.body.password || "";
+  const phone_input  = (req.body.phone_number || "").replace(/\D/g, "");
 
   if (!email || !display_name || !password)
     return res.status(400).json({ error: "Tüm alanlar zorunlu." });
@@ -323,11 +324,21 @@ app.post("/api/register", authLimiter, async (req, res) => {
   if (db.prepare("SELECT id FROM users WHERE email=?").get(email))
     return res.status(409).json({ error: "Bu e-posta zaten kayıtlı." });
 
+  // Phone number: optional — if provided validate and check uniqueness
+  let phone_number = null;
+  if (phone_input) {
+    if (phone_input.length !== 10 || !phone_input.startsWith("5"))
+      return res.status(400).json({ error: "Telefon numarası 10 haneli olmalı ve 5 ile başlamalı." });
+    if (db.prepare("SELECT id FROM users WHERE phone_number=?").get(phone_input))
+      return res.status(409).json({ error: "Bu telefon numarası zaten kayıtlı. Lütfen farklı bir numara girin." });
+    phone_number = phone_input;
+  }
+
   const hash = await bcrypt.hash(password, 12);
   const user = {
     id: uuid(), email, password: hash,
     display_name: display_name.slice(0, 32),
-    phone_number: genPhone(), bio: "",
+    phone_number, bio: "",
     avatar_color: randomColor(), avatar_emoji: "😊",
     avatar_url: null, status_text: "", status_emoji: "",
     status_photo: null, created_at: Date.now(), last_seen: Date.now(),

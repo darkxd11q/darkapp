@@ -1945,9 +1945,10 @@ document.getElementById("sc-photo-input").addEventListener("change",function(){
 // ══ PHONE AUTO-FORMAT ════════════════════════════════════
 function fmtPhoneInput(input){
   let v=input.value.replace(/\D/g,"").slice(0,10);
-  // Format: 5XX XXX XX XX
-  if(v.length>6) v=v.slice(0,4)+" "+v.slice(4,7)+" "+v.slice(7,9)+" "+v.slice(9);
-  else if(v.length>3) v=v.slice(0,4)+" "+v.slice(4);
+  // Format: 5XX XXX XX XX  (3+3+2+2)
+  if(v.length>8)      v=v.slice(0,3)+" "+v.slice(3,6)+" "+v.slice(6,8)+" "+v.slice(8);
+  else if(v.length>6) v=v.slice(0,3)+" "+v.slice(3,6)+" "+v.slice(6);
+  else if(v.length>3) v=v.slice(0,3)+" "+v.slice(3);
   input.value=v;
 }
 

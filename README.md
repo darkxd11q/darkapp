@@ -1,4 +1,4 @@
-# ChatApp v9.5
+# ChatApp v8
 
 **Made by dxrks**
 
