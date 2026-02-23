@@ -94,6 +94,11 @@ db.exec(`
     status_text  TEXT DEFAULT '',
     status_emoji TEXT DEFAULT '',
     status_photo TEXT DEFAULT NULL,
+    bio_link     TEXT DEFAULT '',
+    fav_songs    TEXT DEFAULT '[]',
+    location_txt TEXT DEFAULT '',
+    banner_url   TEXT DEFAULT NULL,
+    profile_views INTEGER DEFAULT 0,
     created_at   INTEGER,
     last_seen    INTEGER
   );
@@ -164,6 +169,11 @@ db.exec(`
   "status_emoji TEXT DEFAULT ''",
   "status_photo TEXT DEFAULT NULL",
   "last_seen INTEGER",
+  "bio_link TEXT DEFAULT ''",
+  "fav_songs TEXT DEFAULT '[]'",
+  "location_txt TEXT DEFAULT ''",
+  "banner_url TEXT DEFAULT NULL",
+  "profile_views INTEGER DEFAULT 0",
 ].forEach(col => { try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(e){} });
 ["group_id TEXT DEFAULT NULL","type TEXT DEFAULT 'text'","read_at INTEGER DEFAULT NULL"]
   .forEach(col => { try { db.exec(`ALTER TABLE messages ADD COLUMN ${col}`); } catch(e){} });
@@ -198,6 +208,7 @@ function getFriends(userId) {
   return db.prepare(`
     SELECT u.id, u.display_name, u.phone_number, u.avatar_color, u.avatar_emoji,
            u.avatar_url, u.bio, u.status_text, u.status_emoji, u.status_photo,
+           u.bio_link, u.location_txt, u.fav_songs, u.banner_url, u.profile_views,
            f.status, f.requester_id
     FROM friendships f
     JOIN users u ON (CASE WHEN f.requester_id=? THEN f.addressee_id ELSE f.requester_id END = u.id)
@@ -321,10 +332,11 @@ app.post("/api/register", authLimiter, async (req, res) => {
     avatar_url: null, status_text: "", status_emoji: "",
     status_photo: null, created_at: Date.now(), last_seen: Date.now(),
   };
-  db.prepare(`INSERT INTO users VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+  db.prepare(`INSERT INTO users VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
     .run(user.id, user.email, user.password, user.display_name, user.phone_number,
          user.bio, user.avatar_color, user.avatar_emoji, user.avatar_url,
          user.status_text, user.status_emoji, user.status_photo,
+         "", "[]", "", null, 0,
          user.created_at, user.last_seen);
   req.session.userId = user.id;
   req.session.userId = user.id;
@@ -380,15 +392,19 @@ app.put("/api/me", requireAuth, (req, res) => {
   const u = db.prepare("SELECT * FROM users WHERE id=?").get(req.session.userId);
   if (!u) return res.status(404).json({ error: "Kullanıcı bulunamadı." });
   const display_name = sanitizeText(req.body.display_name || u.display_name, 32).trim() || u.display_name;
-  const bio          = sanitizeText(req.body.bio || "", 120);
+  const bio          = sanitizeText(req.body.bio || "", 200);
   const avatar_color = /^#[0-9A-Fa-f]{6}$/.test(req.body.avatar_color) ? req.body.avatar_color : u.avatar_color;
   const avatar_emoji = sanitizeText(req.body.avatar_emoji || u.avatar_emoji, 10);
   const status_text  = sanitizeText(req.body.status_text || "", 80);
   const status_emoji = sanitizeText(req.body.status_emoji || "", 10);
+  const bio_link     = sanitizeText(req.body.bio_link || "", 200);
+  const location_txt = sanitizeText(req.body.location_txt || "", 60);
+  let fav_songs = "[]";
+  try { const arr = JSON.parse(req.body.fav_songs || "[]"); fav_songs = JSON.stringify(arr.slice(0,5).map(x=>String(x).slice(0,100))); } catch(e){}
 
   db.prepare(`UPDATE users SET display_name=?,bio=?,avatar_color=?,avatar_emoji=?,
-              status_text=?,status_emoji=? WHERE id=?`)
-    .run(display_name, bio, avatar_color, avatar_emoji, status_text, status_emoji, u.id);
+              status_text=?,status_emoji=?,bio_link=?,location_txt=?,fav_songs=? WHERE id=?`)
+    .run(display_name, bio, avatar_color, avatar_emoji, status_text, status_emoji, bio_link, location_txt, fav_songs, u.id);
   res.json(safeUser(db.prepare("SELECT * FROM users WHERE id=?").get(u.id)));
 });
 
@@ -403,6 +419,23 @@ app.post("/api/me/avatar", requireAuth, uploadLimiter, uploadAvatar.single("avat
   deleteUpload(u.avatar_url);
   db.prepare("UPDATE users SET avatar_url=? WHERE id=?").run(avatarUrl, req.session.userId);
   res.json({ ok: true, avatar_url: avatarUrl });
+});
+
+app.post("/api/me/banner", requireAuth, uploadLimiter, uploadAvatar.single("banner"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "Dosya yüklenmedi." });
+  if (!validateMagicBytes(req.file.path, "image")) { fs.unlinkSync(req.file.path); return res.status(400).json({ error: "Geçersiz resim." }); }
+  const bannerUrl = "/uploads/" + req.file.filename;
+  const u = db.prepare("SELECT banner_url FROM users WHERE id=?").get(req.session.userId);
+  deleteUpload(u.banner_url);
+  db.prepare("UPDATE users SET banner_url=? WHERE id=?").run(bannerUrl, req.session.userId);
+  res.json({ ok: true, banner_url: bannerUrl });
+});
+
+app.delete("/api/me/banner", requireAuth, (req, res) => {
+  const u = db.prepare("SELECT banner_url FROM users WHERE id=?").get(req.session.userId);
+  deleteUpload(u.banner_url);
+  db.prepare("UPDATE users SET banner_url=NULL WHERE id=?").run(req.session.userId);
+  res.json({ ok: true });
 });
 
 app.post("/api/me/status-photo", requireAuth, uploadLimiter, uploadStatus.single("photo"), (req, res) => {
@@ -430,6 +463,13 @@ app.post("/api/upload", requireAuth, uploadLimiter, uploadMedia.single("file"), 
 });
 
 // ── ICE SERVERS ───────────────────────────────────────────
+app.post("/api/users/:id/view", requireAuth, (req, res) => {
+  const id = sanitizeText(req.params.id, 36);
+  if (id !== req.session.userId)
+    db.prepare("UPDATE users SET profile_views=profile_views+1 WHERE id=?").run(id);
+  res.json({ ok: true });
+});
+
 app.get("/api/ice-servers", requireAuth, (req, res) => {
   res.json([
     { urls: "stun:stun.l.google.com:19302" },
@@ -445,7 +485,7 @@ app.get("/api/users/search", requireAuth, searchLimiter, (req, res) => {
   const phone = sanitizeText(req.query.phone || "", 20).replace(/\D/g, "");
   if (phone.length < 4) return res.json({ user: null });
   const u = db.prepare(`SELECT id,display_name,phone_number,avatar_color,avatar_emoji,
-    avatar_url,bio,status_text,status_emoji,status_photo
+    avatar_url,bio,status_text,status_emoji,status_photo,bio_link,location_txt,fav_songs,profile_views
     FROM users WHERE phone_number=? AND id!=?`).get(phone, req.session.userId);
   res.json({ user: u || null });
 });
@@ -590,7 +630,7 @@ app.use((err, req, res, next) => {
 // ── SOCKET.IO ─────────────────────────────────────────────
 const io = new Server(server, {
   transports: ["websocket", "polling"],
-  maxHttpBufferSize: 1e5, // 100KB max per socket message
+  maxHttpBufferSize: 2e6, // 2MB for stickers
   pingTimeout: 60000,
   pingInterval: 25000,
   cors: false,

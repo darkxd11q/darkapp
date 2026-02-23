@@ -405,6 +405,46 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
   color:var(--text-muted);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;}
 .ep-tab-btn.active{background:var(--accent);color:#fff;}
 .ep-tab-btn:hover:not(.active){background:var(--bg-input);color:var(--text);}
+
+/* Sticker subtabs */
+.sp-head{display:flex;align-items:center;justify-content:space-between;padding:6px 10px 4px;gap:8px;}
+.sp-tabs{display:flex;gap:2px;background:var(--bg-input);border-radius:8px;padding:2px;}
+.sp-tab{padding:4px 10px;border:none;background:none;border-radius:6px;cursor:pointer;font-size:.78rem;color:var(--text-muted);transition:all .15s;}
+.sp-tab.active{background:var(--accent);color:#fff;}
+.sp-tab:hover:not(.active){background:var(--border);}
+/* Profile mega */
+.prof-banner{width:100%;height:110px;background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);border-radius:12px 12px 0 0;position:relative;overflow:hidden;cursor:pointer;flex-shrink:0;}
+.prof-banner img{width:100%;height:100%;object-fit:cover;}
+.prof-banner-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25);opacity:0;transition:opacity .2s;font-size:.8rem;color:#fff;gap:6px;}
+.prof-banner:hover .prof-banner-overlay{opacity:1;}
+.prof-banner-del{position:absolute;top:6px;right:8px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:.65rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.prof-av-wrap{display:flex;align-items:flex-end;gap:14px;padding:0 18px;margin-top:-36px;margin-bottom:10px;}
+.prof-av-outer{width:72px;height:72px;border-radius:50%;border:3px solid var(--bg-main);flex-shrink:0;cursor:pointer;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;font-size:2rem;}
+.prof-av-outer img{width:100%;height:100%;object-fit:cover;}
+.prof-av-outer-bg{background:var(--accent);}
+.prof-meta-row{flex:1;padding-top:38px;}
+.prof-views{font-size:.72rem;color:var(--text-muted);margin-left:auto;padding-top:38px;}
+.prof-section{font-size:.72rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.6px;margin:12px 18px 4px;}
+.prof-field-row{padding:0 18px 6px;}
+.prof-fav-songs{display:flex;flex-direction:column;gap:6px;padding:0 18px 6px;}
+.prof-song-input{display:flex;align-items:center;gap:8px;}
+.prof-song-input .fi{flex:1;font-size:.85rem;}
+.prof-song-num{color:var(--accent);font-size:.8rem;font-weight:700;width:16px;flex-shrink:0;}
+.pv-banner{width:100%;height:100px;object-fit:cover;border-radius:12px 12px 0 0;display:block;}
+.pv-banner-placeholder{width:100%;height:80px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px 12px 0 0;}
+.pv-profile-row{display:flex;align-items:flex-end;gap:10px;padding:0 16px;margin-top:-28px;margin-bottom:8px;}
+.pv-av-large{width:60px;height:60px;border-radius:50%;border:3px solid var(--bg-main);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.8rem;overflow:hidden;}
+.pv-av-large img{width:100%;height:100%;object-fit:cover;}
+.pv-info-col{flex:1;padding-top:28px;}
+.pv-info-col .pv-name{text-align:left;margin:0;}
+.pv-views{font-size:.7rem;color:var(--text-muted);}
+.pv-detail{font-size:.82rem;color:var(--text-muted);padding:2px 16px;display:flex;align-items:center;gap:6px;}
+.pv-detail a{color:var(--accent);text-decoration:none;}
+.pv-songs{padding:8px 16px;}
+.pv-songs-title{font-size:.72rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.pv-song-item{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:.84rem;border-bottom:1px solid var(--border);}
+.pv-song-item:last-child{border-bottom:none;}
+.pv-song-icon{font-size:1rem;}
 </style>
 </head>
 <body>
@@ -490,7 +530,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
         <div class="ep-grid" id="ep-grid"></div>
       </div>
       <div id="ep-panel-sticker" style="display:none;">
-        <div class="sp-head"><span style="font-size:.88rem;font-weight:600;color:var(--text)">Stickerlarım</span><button class="sp-create-btn" id="open-sticker-create">+ Oluştur</button></div>
+        <div class="sp-head">
+          <div class="sp-tabs">
+            <button class="sp-tab active" id="sp-tab-all">Tümü</button>
+            <button class="sp-tab" id="sp-tab-fav">⭐</button>
+            <button class="sp-tab" id="sp-tab-recent">🕐</button>
+          </div>
+          <button class="sp-create-btn" id="open-sticker-create">+ Oluştur</button>
+        </div>
         <div class="sp-grid" id="sp-grid"><div class="sp-empty">Henüz sticker yok!</div></div>
       </div>
     </div>
@@ -564,27 +611,51 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
 
 <!-- PROFILE MODAL -->
 <div id="prof-modal" class="mo" style="display:none;">
-  <div class="mo-box">
-    <div class="mo-head"><h2>Profili Düzenle</h2><button class="mo-close" data-close="prof-modal">✕</button></div>
-    <div class="mo-body">
-      <div class="av-picker">
-        <div class="big-av" id="prev-av" onclick="document.getElementById('avatar-file-input').click()">
-          <div class="big-av-overlay">📷</div>
-        </div>
-        <input type="file" id="avatar-file-input" accept="image/*" style="display:none"/>
-        <div style="width:100%">
-          <div class="fl">Emoji Seç</div><div class="emoji-row" id="emoji-row"></div>
-          <div class="fl">Renk Seç</div><div class="color-row" id="color-row"></div>
+  <div class="mo-box" style="max-width:440px;padding:0;overflow:hidden;">
+    <div class="mo-head" style="padding:12px 16px;border-bottom:1px solid var(--border);border-radius:0;"><h2>Profili Düzenle</h2><button class="mo-close" data-close="prof-modal">✕</button></div>
+    <div class="prof-banner" id="prof-banner-area" onclick="document.getElementById('banner-file-input').click()">
+      <div class="prof-banner-overlay">📷 Kapak Fotoğrafı Ekle</div>
+      <button class="prof-banner-del" id="banner-del-btn" style="display:none" onclick="event.stopPropagation();deleteBanner()">✕</button>
+    </div>
+    <input type="file" id="banner-file-input" accept="image/*" style="display:none"/>
+    <div class="prof-av-wrap">
+      <div class="prof-av-outer prof-av-outer-bg" id="prev-av" onclick="document.getElementById('avatar-file-input').click()" style="position:relative;">
+        <div class="big-av-overlay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);border-radius:50%;opacity:0;transition:opacity .2s;font-size:.7rem;color:#fff">📷</div>
+      </div>
+      <input type="file" id="avatar-file-input" accept="image/*" style="display:none"/>
+      <div style="flex:1"></div>
+      <div id="prof-views-badge" style="font-size:.72rem;color:var(--text-muted);padding-top:38px;"></div>
+    </div>
+    <div style="padding:0 18px 8px;">
+      <div class="fl">Avatar Emoji & Renk</div>
+      <div class="emoji-row" id="emoji-row" style="margin-bottom:6px;"></div>
+      <div class="color-row" id="color-row"></div>
+    </div>
+    <div style="padding:0 18px;display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;">
+      <div><div class="fl">Kullanıcı Adı</div><input class="fi" id="prof-name" type="text" maxlength="32" placeholder="Kullanıcı adın"/></div>
+      <div><div class="fl">Hakkında</div><textarea class="fi" id="prof-bio" maxlength="200" rows="3" placeholder="Kendin hakkında birşeyler yaz..." style="resize:none;font-family:inherit;"></textarea></div>
+      <div><div class="fl">📍 Konum</div><input class="fi" id="prof-location" type="text" maxlength="60" placeholder="İstanbul, Türkiye"/></div>
+      <div><div class="fl">🔗 Bağlantı</div><input class="fi" id="prof-link" type="url" maxlength="200" placeholder="https://..."/></div>
+      <div>
+        <div class="fl">🎵 Favori Şarkılar (en fazla 5)</div>
+        <div class="prof-fav-songs">
+          <div class="prof-song-input"><span class="prof-song-num">1</span><input class="fi" data-song="0" placeholder="Şarkı adı — Sanatçı"/></div>
+          <div class="prof-song-input"><span class="prof-song-num">2</span><input class="fi" data-song="1" placeholder="Şarkı adı — Sanatçı"/></div>
+          <div class="prof-song-input"><span class="prof-song-num">3</span><input class="fi" data-song="2" placeholder="Şarkı adı — Sanatçı"/></div>
+          <div class="prof-song-input"><span class="prof-song-num">4</span><input class="fi" data-song="3" placeholder="Şarkı adı — Sanatçı"/></div>
+          <div class="prof-song-input"><span class="prof-song-num">5</span><input class="fi" data-song="4" placeholder="Şarkı adı — Sanatçı"/></div>
         </div>
       </div>
-      <div class="fl">Kullanıcı Adı</div><input class="fi" id="prof-name" type="text" maxlength="32"/>
-      <div class="fl">Hakkında</div><input class="fi" id="prof-bio" type="text" maxlength="120" placeholder="Kısa bir bio..."/>
-      <div class="fl">Telefon Numaran</div>
-      <div class="phone-box"><span id="prof-phone"></span><button class="copy-b" id="copy-phone">📋 Kopyala</button></div>
+      <div><div class="fl">Telefon Numaran</div>
+        <div class="phone-box"><span id="prof-phone"></span><button class="copy-b" id="copy-phone">📋 Kopyala</button></div>
+      </div>
+    </div>
+    <div style="padding:14px 18px;">
       <button class="save-b" id="save-prof-btn">Kaydet</button>
     </div>
   </div>
 </div>
+
 
 <!-- STATUS MODAL -->
 <div id="status-modal" class="mo" style="display:none;">
@@ -652,7 +723,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
       <div class="fl">Telefon Numarasıyla Ara</div>
       <div class="ph-row">
         <div class="ph-pre">📱 +90</div>
-        <input type="tel" id="friend-phone" placeholder="5XX XXX XXXX" maxlength="15"/>
+        <input type="tel" id="friend-phone" placeholder="5XX XXX XX XX" maxlength="13" oninput="fmtPhoneInput(this)"/>
         <button class="srch-b" id="search-friend-btn">Ara</button>
       </div>
       <div id="friend-result"></div>
@@ -703,6 +774,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
           <button class="sc-tool on" id="sc-pen">🖊 Kalem</button>
           <button class="sc-tool" id="sc-eraser">✏️ Silgi</button>
           <button class="sc-tool" id="sc-text-tool">T Metin</button>
+          <button class="sc-tool" id="sc-photo-tool" title="Fotoğraftan sticker">📷 Foto</button>
+          <input type="file" id="sc-photo-input" accept="image/*" style="display:none"/>>
           <button class="sc-tool" id="sc-clear">🗑 Temizle</button>
         </div>
         <div class="sc-tools">
@@ -1172,7 +1245,7 @@ document.getElementById("voice-btn").addEventListener("click",async function(){
 });
 
 // Sticker send
-function sendSticker(dataUrl){if(!activeChat)return;sendMedia(dataUrl,"sticker");closePickerPopups();}
+function sendSticker(url){if(!activeChat)return;sendMedia(url,"sticker");closePickerPopups();addRecentSticker(url);}
 
 // ══ CHAT SEARCH ════════════════════════════════════════════
 function closeChatSearch(){
@@ -1232,15 +1305,53 @@ function fmtDur(s){const m=Math.floor(s/60),sec=s%60;return `${m}dk ${sec}s`;}
 async function startWebRTC(remoteId,isInitiator,ct){
   if(!localStream){
     const a={echoCancellation:true,noiseSuppression:true,autoGainControl:true,sampleRate:48000};
-    const v={width:{ideal:1920,min:640},height:{ideal:1080,min:480},frameRate:{ideal:30,min:15},facingMode:currentFacingMode};
-    const constraints=ct==="video"?{audio:a,video:v}:{audio:a,video:false};
-    try{localStream=await navigator.mediaDevices.getUserMedia(constraints);}
-    catch(e){alert("Kamera/Mikrofon izni gerekli!");endCallUI();return;}
+    // Video calls start with camera OFF for privacy - only request audio first
+    try{localStream=await navigator.mediaDevices.getUserMedia({audio:a,video:false});}
+    catch(e){
+      // No mic permission - create silent stream so call still works
+      try{const ctx=new AudioContext();const dest=ctx.createMediaStreamDestination();localStream=dest.stream;}
+      catch(e2){localStream=new MediaStream();}
+    }
     if(ct==="video"){
-      const lv=document.getElementById("local-video");lv.srcObject=localStream;lv.classList.add("show");
+      isCamOff=true; // camera starts off for video calls
+      const camBtn=document.getElementById("cbtn-vid");
+      if(camBtn){camBtn.classList.add("off");const lbl=camBtn.querySelector(".cbtn-label");if(lbl)lbl.textContent="Kamerayı Aç";}
+      const iconOn=document.getElementById("icon-cam-on"),iconOff=document.getElementById("icon-cam-off");
+      if(iconOn)iconOn.style.display="none";if(iconOff)iconOff.style.display="";
     }
   }
   await setupPC(remoteId,isInitiator);
+}
+// Turn camera on/off manually during call
+async function toggleCamera(){
+  if(!localStream)return;
+  isCamOff=!isCamOff;
+  if(!isCamOff){
+    // Turn camera ON
+    try{
+      const a={echoCancellation:true,noiseSuppression:true,autoGainControl:true};
+      const v={width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30},facingMode:currentFacingMode};
+      const ns=await navigator.mediaDevices.getUserMedia({audio:false,video:v});
+      const vt=ns.getVideoTracks()[0];
+      if(vt){
+        localStream.addTrack(vt);
+        if(pc){const s=pc.getSenders().find(s=>s.track?.kind==="video");
+          if(s)await s.replaceTrack(vt);else pc.addTrack(vt,localStream);}
+        const lv=document.getElementById("local-video");lv.srcObject=localStream;lv.classList.add("show");
+        document.getElementById("audio-avatar-center").style.display="none";
+      }
+    }catch(e){isCamOff=true;alert("Kamera izni gerekli!");return;}
+  } else {
+    // Turn camera OFF
+    localStream.getVideoTracks().forEach(t=>{t.stop();localStream.removeTrack(t);});
+    if(pc){const s=pc.getSenders().find(s=>s.track?.kind==="video");if(s)s.replaceTrack(null).catch(()=>{});}
+    const lv=document.getElementById("local-video");lv.srcObject=null;lv.classList.remove("show");
+    document.getElementById("audio-avatar-center").style.display="flex";
+  }
+  const camBtn=document.getElementById("cbtn-vid");
+  if(camBtn){camBtn.classList.toggle("off",isCamOff);const lbl=camBtn.querySelector(".cbtn-label");if(lbl)lbl.textContent=isCamOff?"Kamerayı Aç":"Kamera";}
+  const iconOn=document.getElementById("icon-cam-on"),iconOff=document.getElementById("icon-cam-off");
+  if(iconOn)iconOn.style.display=isCamOff?"none":"";if(iconOff)iconOff.style.display=isCamOff?"":"none";
 }
 async function setupPC(remoteId,isInitiator){
   pc=new RTCPeerConnection({iceServers});
@@ -1366,20 +1477,51 @@ function renderEmojiGrid(emojis){
 }
 
 // ══ STICKERS ════════════════════════════════════════════════
-function loadStickers(){try{stickers=JSON.parse(localStorage.getItem("chatapp_stickers")||"[]");}catch(e){stickers=[];}renderStickerGrid();}
+function loadStickers(){
+  try{stickers=JSON.parse(localStorage.getItem("chatapp_stickers")||"[]");}catch(e){stickers=[];}
+  // Migrate old dataUrl stickers
+  stickers=stickers.map(s=>({id:s.id||Date.now().toString(),url:s.url||s.dataUrl||"",fav:s.fav||false}));
+  renderStickerGrid();
+}
 function saveStickers(){localStorage.setItem("chatapp_stickers",JSON.stringify(stickers));}
+let recentStickers=[];
+function addRecentSticker(url){
+  recentStickers=recentStickers.filter(u=>u!==url);
+  recentStickers.unshift(url);
+  if(recentStickers.length>12)recentStickers.pop();
+  try{localStorage.setItem("chatapp_recent_stickers",JSON.stringify(recentStickers));}catch(e){}
+}
+function loadRecentStickers(){
+  try{recentStickers=JSON.parse(localStorage.getItem("chatapp_recent_stickers")||"[]");}catch(e){recentStickers=[];}
+}
+let stickerTab="all";
 function renderStickerGrid(){
   const grid=document.getElementById("sp-grid");grid.innerHTML="";
-  if(!stickers.length){grid.innerHTML='<div class="sp-empty">Henüz sticker yok!</div>';return;}
-  stickers.forEach((s,i)=>{
+  let list=[];
+  if(stickerTab==="fav")list=stickers.filter(s=>s.fav);
+  else if(stickerTab==="recent")list=recentStickers.map(url=>({url,id:url,fav:false}));
+  else list=stickers;
+  if(!list.length){grid.innerHTML=`<div class="sp-empty">${stickerTab==="fav"?"Favori sticker yok":"Henüz sticker yok!"}</div>`;return;}
+  list.forEach((s,i)=>{
+    const realIdx=stickerTab==="all"?i:stickers.findIndex(x=>x.url===s.url);
     const item=document.createElement("div");item.className="sp-item";
-    item.innerHTML=`<img src="${s.dataUrl}" alt="sticker"/><button class="sp-del" onclick="deleteSticker(${i},event)">✕</button>`;
-    item.querySelector("img").onclick=()=>sendSticker(s.dataUrl);
+    const src=s.url||s.dataUrl||"";
+    const isFav=stickers.find(x=>x.url===s.url)?.fav||false;
+    item.innerHTML=`<img src="${src}" alt="sticker"/>
+      <div class="sp-item-btns">
+        <button class="sp-fav ${isFav?"active":""}" onclick="toggleFavSticker('${src}',event)">${isFav?"⭐":"☆"}</button>
+        ${stickerTab!=="recent"?`<button class="sp-del" onclick="deleteSticker(${realIdx},event)">✕</button>`:""}
+      </div>`;
+    item.querySelector("img").onclick=()=>sendSticker(src);
     grid.appendChild(item);
   });
 }
+function toggleFavSticker(url,e){
+  e.stopPropagation();
+  const s=stickers.find(x=>x.url===url);
+  if(s){s.fav=!s.fav;saveStickers();renderStickerGrid();}
+}
 function deleteSticker(i,e){e.stopPropagation();stickers.splice(i,1);saveStickers();renderStickerGrid();}
-
 // Sticker canvas
 let scDrawing=false,scTool="pen",scTransparentBg=false;
 function initStickerCanvas(){
@@ -1414,9 +1556,18 @@ document.getElementById("sc-add-text").addEventListener("click",()=>{
 });
 document.getElementById("sc-save-btn").addEventListener("click",()=>{
   const canvas=document.getElementById("sticker-canvas"),out=document.createElement("canvas");out.width=150;out.height=150;
-  out.getContext("2d").drawImage(canvas,0,0,150,150);
-  stickers.push({id:Date.now().toString(),dataUrl:out.toDataURL("image/png")});
-  saveStickers();renderStickerGrid();document.getElementById("sticker-create-modal").style.display="none";
+  out.getContext("2d").drawImage(canvas,0,0,240,240);
+  out.toBlob(async blob=>{
+    try{
+      const fd=new FormData();fd.append("file",blob,"sticker.png");
+      const r=await fetch("/api/upload",{method:"POST",body:fd});
+      const d=await r.json();
+      if(!d.ok){alert("Sticker yüklenemedi");return;}
+      stickers.unshift({id:Date.now().toString(),url:d.url,fav:false});
+      saveStickers();renderStickerGrid();
+      document.getElementById("sticker-create-modal").style.display="none";
+    }catch(e){alert("Hata: "+e.message);}
+  },"image/png");
 });
 function hexToRgb(hex){const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);return r?{r:parseInt(r[1],16),g:parseInt(r[2],16),b:parseInt(r[3],16)}:null;}
 
@@ -1524,12 +1675,31 @@ function openEditProfile(){
   selEmoji=me.avatar_emoji;selColor=me.avatar_color;
   document.getElementById("prof-name").value=me.display_name;
   document.getElementById("prof-bio").value=me.bio||"";
+  document.getElementById("prof-location").value=me.location_txt||"";
+  document.getElementById("prof-link").value=me.bio_link||"";
   document.getElementById("prof-phone").textContent=fmtPhone(me.phone_number);
+  // Load fav songs
+  let songs=[];try{songs=JSON.parse(me.fav_songs||"[]");}catch(e){}
+  document.querySelectorAll("[data-song]").forEach(inp=>{const i=parseInt(inp.dataset.song);inp.value=songs[i]||"";});
+  // Avatar
   const pav=document.getElementById("prev-av");
-  pav.innerHTML=me.avatar_url?`<img src="${me.avatar_url}" alt=""/><div class="big-av-overlay">📷</div>`:`${me.avatar_emoji}<div class="big-av-overlay">📷</div>`;
-  pav.style.background=me.avatar_color;
+  if(me.avatar_url){pav.innerHTML=`<img src="${me.avatar_url}" alt=""/><div class="big-av-overlay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);border-radius:50%;opacity:0;transition:opacity .2s;font-size:.7rem;color:#fff">📷</div>`;pav.style.background="var(--bg-input)";}
+  else{pav.innerHTML=`<span style="font-size:2rem">${me.avatar_emoji}</span><div class="big-av-overlay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);border-radius:50%;opacity:0;transition:opacity .2s;font-size:.7rem;color:#fff">📷</div>`;pav.style.background=me.avatar_color;}
   document.querySelectorAll(".eo").forEach(b=>b.classList.toggle("sel",b.textContent===selEmoji));
+  // Banner
+  const bannerArea=document.getElementById("prof-banner-area");
+  const delBtn=document.getElementById("banner-del-btn");
+  if(me.banner_url){bannerArea.style.background="none";bannerArea.innerHTML=`<img src="${me.banner_url}" alt=""/><div class="prof-banner-overlay">📷 Değiştir</div><button class="prof-banner-del" id="banner-del-btn" onclick="event.stopPropagation();deleteBanner()">✕</button>`;}
+  else{bannerArea.style.background="";bannerArea.innerHTML=`<div class="prof-banner-overlay" style="opacity:1;">📷 Kapak Fotoğrafı Ekle</div>`;}
+  // Views
+  document.getElementById("prof-views-badge").textContent=me.profile_views?(me.profile_views+" görüntülenme"):"";
   document.getElementById("prof-modal").style.display="flex";
+}
+async function deleteBanner(){
+  await api("DELETE","/api/me/banner");
+  me.banner_url=null;
+  const bannerArea=document.getElementById("prof-banner-area");
+  if(bannerArea)bannerArea.innerHTML=`<div class="prof-banner-overlay" style="opacity:1;">📷 Kapak Fotoğrafı Ekle</div>`;
 }
 function openStatusFromProfile(){
   document.getElementById("my-profile-modal").style.display="none";
@@ -1548,9 +1718,33 @@ document.getElementById("avatar-file-input").addEventListener("change",async fun
   if(d.ok){me.avatar_url=d.avatar_url;const pav=document.getElementById("prev-av");pav.innerHTML=`<img src="${d.avatar_url}" alt=""/><div class="big-av-overlay">📷</div>`;updateHeader();}}catch(e){}
 });
 document.getElementById("save-prof-btn").addEventListener("click",async()=>{
-  const updated=await api("PUT","/api/me",{display_name:document.getElementById("prof-name").value.trim(),bio:document.getElementById("prof-bio").value.trim(),avatar_color:selColor,avatar_emoji:selEmoji,status_text:me.status_text,status_emoji:me.status_emoji});
+  const songs=[];
+  document.querySelectorAll("[data-song]").forEach(inp=>{const v=inp.value.trim();if(v)songs.push(v);});
+  const payload={
+    display_name:document.getElementById("prof-name").value.trim(),
+    bio:document.getElementById("prof-bio").value.trim(),
+    avatar_color:selColor,avatar_emoji:selEmoji,
+    status_text:me.status_text,status_emoji:me.status_emoji,
+    bio_link:document.getElementById("prof-link").value.trim(),
+    location_txt:document.getElementById("prof-location").value.trim(),
+    fav_songs:JSON.stringify(songs),
+  };
+  const updated=await api("PUT","/api/me",payload);
   me=updated;updateHeader();document.getElementById("prof-modal").style.display="none";
   await loadFriends();await loadGroups();
+});
+// Banner upload
+document.getElementById("banner-file-input").addEventListener("change",async function(){
+  if(!this.files[0])return;
+  const fd=new FormData();fd.append("banner",this.files[0]);
+  const r=await fetch("/api/me/banner",{method:"POST",body:fd});
+  const d=await r.json();
+  if(d.ok){
+    me.banner_url=d.banner_url;
+    const bannerArea=document.getElementById("prof-banner-area");
+    if(bannerArea)bannerArea.innerHTML=`<img src="${d.banner_url}" alt=""/><div class="prof-banner-overlay">📷 Değiştir</div><button class="prof-banner-del" id="banner-del-btn" onclick="event.stopPropagation();deleteBanner()">✕</button>`;
+  }
+  this.value="";
 });
 document.getElementById("copy-phone").addEventListener("click",()=>{navigator.clipboard.writeText(me.phone_number).then(()=>{document.getElementById("copy-phone").textContent="✅ Kopyalandı";setTimeout(()=>document.getElementById("copy-phone").textContent="📋 Kopyala",2000);});});
 
@@ -1586,17 +1780,34 @@ document.getElementById("create-group-submit-btn").addEventListener("click",asyn
 // ══ USER PREVIEW ════════════════════════════════════════════
 function showPV(uid){
   const f=friends.find(x=>x.id===uid);if(!f)return;
+  // Increment view count
+  api("POST",`/api/users/${uid}/view`).catch(()=>{});
+  // Songs
+  let songs=[];try{songs=JSON.parse(f.fav_songs||"[]");}catch(e){}
+  const songsHtml=songs.length?`<div class="pv-songs">
+    <div class="pv-songs-title">🎵 Favori Şarkılar</div>
+    ${songs.map(s=>`<div class="pv-song-item"><span class="pv-song-icon">🎵</span><span>${esc(s)}</span></div>`).join("")}
+  </div>`:"";
   const statusHtml=f.status_text||f.status_emoji||f.status_photo?`
-    <div style="display:flex;align-items:center;gap:8px;justify-content:center;flex-wrap:wrap;margin:6px 0;">
-      ${f.status_photo?`<img src="${esc(f.status_photo)}" style="width:48px;height:48px;border-radius:8px;object-fit:cover;" alt=""/>`:""}
+    <div style="display:flex;align-items:center;gap:8px;padding:4px 16px;flex-wrap:wrap;">
+      ${f.status_photo?`<img src="${esc(f.status_photo)}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;" alt=""/>`:""}
       ${f.status_emoji||f.status_text?`<span class="pv-status">${esc((f.status_emoji||"")+" "+(f.status_text||""))}</span>`:""}
     </div>`:"";
   document.getElementById("pv-body").innerHTML=`
-    <div class="pv-av" style="background:${avBg(f)}">${mkAv(f)}</div>
-    <div class="pv-name">${esc(f.display_name)}</div>
-    <div class="pv-phone">📱 ${fmtPhone(f.phone_number)}</div>
+    ${f.banner_url?`<img src="${esc(f.banner_url)}" class="pv-banner" alt=""/>`:`<div class="pv-banner-placeholder"></div>`}
+    <div class="pv-profile-row">
+      <div class="pv-av-large" style="background:${avBg(f)}">${mkAv(f)}</div>
+      <div class="pv-info-col">
+        <div class="pv-name">${esc(f.display_name)}</div>
+        <div class="pv-views">${f.profile_views?(f.profile_views+" görüntülenme"):""}</div>
+      </div>
+    </div>
     ${statusHtml}
-    ${f.bio?`<div class="pv-bio">"${esc(f.bio)}"</div>`:""}
+    ${f.bio?`<div class="pv-detail">📝 ${esc(f.bio)}</div>`:""}
+    ${f.location_txt?`<div class="pv-detail">📍 ${esc(f.location_txt)}</div>`:""}
+    ${f.bio_link?`<div class="pv-detail">🔗 <a href="${esc(f.bio_link)}" target="_blank" rel="noopener noreferrer">${esc(f.bio_link.replace(/^https?:\/\//,""))}</a></div>`:""}
+    <div class="pv-detail">📱 ${fmtPhone(f.phone_number)}</div>
+    ${songsHtml}
     <div class="pv-acts">
       <button class="pvb pri" onclick="openChat(friends.find(x=>x.id==='${f.id}'));document.getElementById('pv-modal').style.display='none'">💬 Mesaj</button>
       <button class="pvb dan" onclick="removeF('${f.id}')">🗑 Sil</button>
@@ -1645,7 +1856,7 @@ document.getElementById("open-sticker-create").addEventListener("click",()=>{
 // ══ CALL CONTROLS ═══════════════════════════════════════════
 document.getElementById("cbtn-end").addEventListener("click",()=>{if(activeCallId)socket.emit("end_call",{callId:activeCallId});endCallUI(callSeconds);});
 document.getElementById("cbtn-mute").addEventListener("click",function(){isMuted=!isMuted;localStream?.getAudioTracks().forEach(t=>t.enabled=!isMuted);document.getElementById("icon-mic-on").style.display=isMuted?"none":"";document.getElementById("icon-mic-off").style.display=isMuted?"":"none";this.classList.toggle("muted",isMuted);this.querySelector(".cbtn-label").textContent=isMuted?"Sesi Aç":"Sessiz";});
-document.getElementById("cbtn-vid").addEventListener("click",function(){isCamOff=!isCamOff;localStream?.getVideoTracks().forEach(t=>t.enabled=!isCamOff);document.getElementById("icon-cam-on").style.display=isCamOff?"none":"";document.getElementById("icon-cam-off").style.display=isCamOff?"":"none";this.classList.toggle("off",isCamOff);this.querySelector(".cbtn-label").textContent=isCamOff?"Kamerayı Aç":"Kamera";});
+document.getElementById("cbtn-vid").addEventListener("click",toggleCamera);
 document.getElementById("cbtn-flip").addEventListener("click",async function(){
   if(!localStream||callType!=="video")return;currentFacingMode=currentFacingMode==="user"?"environment":"user";
   localStream.getVideoTracks().forEach(t=>t.stop());
@@ -1702,6 +1913,61 @@ function fmtD(ts){const d=new Date(ts),t=new Date();if(d.toDateString()===t.toDa
 function fmtPhone(p){if(!p)return "";return `+90 ${p.slice(0,3)} ${p.slice(3,6)} ${p.slice(6,8)} ${p.slice(8)}`;}
 
 init();
+
+// ══ STICKER TABS ═════════════════════════════════════════
+document.getElementById("sp-tab-all").addEventListener("click",()=>{stickerTab="all";document.querySelectorAll(".sp-tab").forEach(b=>b.classList.remove("active"));document.getElementById("sp-tab-all").classList.add("active");renderStickerGrid();});
+document.getElementById("sp-tab-fav").addEventListener("click",()=>{stickerTab="fav";document.querySelectorAll(".sp-tab").forEach(b=>b.classList.remove("active"));document.getElementById("sp-tab-fav").classList.add("active");renderStickerGrid();});
+document.getElementById("sp-tab-recent").addEventListener("click",()=>{stickerTab="recent";document.querySelectorAll(".sp-tab").forEach(b=>b.classList.remove("active"));document.getElementById("sp-tab-recent").classList.add("active");renderStickerGrid();});
+
+// ══ STICKER PHOTO IMPORT ══════════════════════════════════
+document.getElementById("sc-photo-tool").addEventListener("click",()=>document.getElementById("sc-photo-input").click());
+document.getElementById("sc-photo-input").addEventListener("change",function(){
+  if(!this.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.getElementById("sticker-canvas");
+      const ctx=canvas.getContext("2d");
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // Fit image keeping aspect ratio
+      const scale=Math.min(canvas.width/img.width,canvas.height/img.height);
+      const w=img.width*scale,h=img.height*scale;
+      const x=(canvas.width-w)/2,y=(canvas.height-h)/2;
+      ctx.drawImage(img,x,y,w,h);
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(this.files[0]);
+  this.value="";
+});
+
+// ══ PHONE AUTO-FORMAT ════════════════════════════════════
+function fmtPhoneInput(input){
+  let v=input.value.replace(/\D/g,"").slice(0,10);
+  // Format: 5XX XXX XX XX
+  if(v.length>6) v=v.slice(0,4)+" "+v.slice(4,7)+" "+v.slice(7,9)+" "+v.slice(9);
+  else if(v.length>3) v=v.slice(0,4)+" "+v.slice(4);
+  input.value=v;
+}
+
+// ══ LOAD RECENT STICKERS ═════════════════════════════════
+loadRecentStickers();
+
+// ══ SP-ITEM EXTRA CSS ═════════════════════════════════════
+(function(){
+  const st=document.createElement("style");
+  st.textContent=`
+    .sp-item{position:relative;}
+    .sp-item-btns{position:absolute;top:2px;right:2px;display:none;flex-direction:column;gap:2px;}
+    .sp-item:hover .sp-item-btns{display:flex;}
+    .sp-fav{background:rgba(0,0,0,.6);border:none;border-radius:4px;color:#fff;font-size:.65rem;cursor:pointer;padding:2px 4px;line-height:1;}
+    .sp-fav.active{color:#f5c518;}
+    .sp-del{background:rgba(180,0,0,.7);border:none;border-radius:4px;color:#fff;font-size:.65rem;cursor:pointer;padding:2px 4px;line-height:1;}
+  `;
+  document.head.appendChild(st);
+})();
+
 </script>
 </body>
 </html>
