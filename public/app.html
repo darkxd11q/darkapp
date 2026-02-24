@@ -360,6 +360,52 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
 .call-hist-time{font-size:.75rem;color:var(--text-muted);}
 .call-hist-dur{font-size:.75rem;color:var(--accent);margin-left:auto;}
 
+/* ══ SETTINGS MODAL ══════════════════════════════════════ */
+.settings-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto;}
+.settings-tab{padding:12px 14px;background:none;border:none;color:var(--text-muted);font-size:.82rem;
+  font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+.settings-tab.active{color:var(--accent);border-color:var(--accent);}
+.settings-tab:hover:not(.active){color:var(--text);}
+.settings-panel{display:none;padding:20px;}
+.settings-panel.active{display:block;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.settings-row:last-child{border-bottom:none;}
+.settings-row-label{font-size:.9rem;font-weight:500;}
+.settings-row-sub{font-size:.76rem;color:var(--text-muted);margin-top:2px;}
+.settings-select{background:var(--bg-input);border:1px solid var(--border);border-radius:7px;
+  padding:6px 10px;color:var(--text);font-size:.82rem;cursor:pointer;outline:none;}
+.settings-toggle{position:relative;width:44px;height:24px;cursor:pointer;}
+.settings-toggle input{opacity:0;width:0;height:0;}
+.settings-toggle-slider{position:absolute;inset:0;background:var(--bg-input);border-radius:12px;transition:.2s;}
+.settings-toggle-slider:before{content:"";position:absolute;width:18px;height:18px;left:3px;bottom:3px;
+  background:#fff;border-radius:50%;transition:.2s;}
+.settings-toggle input:checked + .settings-toggle-slider{background:var(--accent);}
+.settings-toggle input:checked + .settings-toggle-slider:before{transform:translateX(20px);}
+.music-player{background:var(--bg-input);border-radius:12px;padding:16px;margin-bottom:14px;}
+.music-player-title{font-size:.9rem;font-weight:600;margin-bottom:4px;}
+.music-player-sub{font-size:.76rem;color:var(--text-muted);margin-bottom:12px;}
+.music-btns{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.music-btn{padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);background:none;
+  color:var(--text-muted);font-size:.8rem;cursor:pointer;transition:all .15s;}
+.music-btn:hover,.music-btn.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+.music-vol-row{display:flex;align-items:center;gap:10px;}
+.music-vol-row label{font-size:.78rem;color:var(--text-muted);white-space:nowrap;}
+.music-vol-row input[type=range]{flex:1;accent-color:var(--accent);}
+.blocked-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.blocked-item:last-child{border-bottom:none;}
+.blocked-av{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem;overflow:hidden;}
+.blocked-av img{width:100%;height:100%;object-fit:cover;}
+.unblock-btn{margin-left:auto;padding:5px 12px;border-radius:7px;border:none;background:var(--bg-input);color:var(--accent);font-size:.78rem;cursor:pointer;}
+.unblock-btn:hover{background:var(--accent);color:#fff;}
+/* Ephemeral timer badge */
+.ephemeral-mode-btn{position:relative;}
+.ephemeral-mode-btn.active{color:#f87171;}
+.eph-badge{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:#f87171;border-radius:50%;display:none;}
+.ephemeral-mode-btn.active .eph-badge{display:block;}
+.eph-msg-timer{font-size:.65rem;color:#f87171;display:block;text-align:right;margin-top:1px;}
+/* Nickname */
+.nickname-tag{font-size:.68rem;color:var(--accent);background:rgba(0,168,132,.12);border-radius:4px;padding:1px 5px;margin-left:5px;}
+
 /* MOBILE */
 @media(max-width:640px){
   #sidebar{width:100%;min-width:100%;position:absolute;inset:0;}
@@ -460,6 +506,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
       <button class="ib" id="create-group-btn" title="Grup Oluştur">👥</button>
       <button class="ib" id="add-friend-btn" title="Arkadaş Ekle">➕</button>
       <button class="ib" id="theme-btn" title="Tema">🎨</button>
+      <button class="ib" id="settings-btn" title="Ayarlar">⚙️</button>
     </div>
     <div id="sb-tabs">
       <button class="stab on" data-tab="chats">💬 Sohbetler</button>
@@ -513,6 +560,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
       </button>
       <input type="file" id="photo-input" accept="image/*" style="display:none"/>
+      <button class="input-action-btn ephemeral-mode-btn" id="ephemeral-btn" title="Süreli Mesaj (10s)" style="font-size:.9rem;position:relative;">
+        ⏱<span class="eph-badge"></span>
+      </button>
       <textarea id="msg-input" placeholder="Mesaj yaz..." rows="1"></textarea>
       <button id="send-btn">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -707,6 +757,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
       <div class="mpp-item" onclick="openStatusFromProfile()">
         <span class="mpp-item-icon">💬</span>Durum Güncelle
       </div>
+      <div class="mpp-item" onclick="document.getElementById('my-profile-modal').style.display='none';openSettings()">
+        <span class="mpp-item-icon">⚙️</span>Ayarlar
+      </div>
       <div class="mpp-sep"></div>
       <div class="mpp-item danger" onclick="doLogout()">
         <span class="mpp-item-icon">🚪</span>Hesaptan Çık
@@ -800,6 +853,133 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
   </div>
 </div>
 
+
+<!-- SETTINGS MODAL -->
+<div id="settings-modal" class="mo" style="display:none;">
+  <div class="mo-box" style="max-width:520px;padding:0;overflow:hidden;">
+    <div class="mo-head" style="padding:14px 18px;"><h2>⚙️ Ayarlar</h2><button class="mo-close" data-close="settings-modal">✕</button></div>
+    <div class="settings-tabs">
+      <button class="settings-tab active" data-stab="privacy">🔒 Gizlilik</button>
+      <button class="settings-tab" data-stab="music">🎵 Müzik</button>
+      <button class="settings-tab" data-stab="blocked">🚫 Engellenenler</button>
+      <button class="settings-tab" data-stab="notifications">🔔 Bildirimler</button>
+    </div>
+    <!-- PRIVACY -->
+    <div class="settings-panel active" id="stab-privacy">
+      <div class="settings-row">
+        <div><div class="settings-row-label">Son görülme</div><div class="settings-row-sub">Son çevrimiçi bilgisi kimlere görünsün?</div></div>
+        <select class="settings-select" id="priv-last-seen">
+          <option value="everyone">Herkes</option>
+          <option value="friends">Arkadaşlar</option>
+          <option value="nobody">Kimse</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Çevrimiçi durumu</div><div class="settings-row-sub">Aktif olduğunuzu kimlere göstereyim?</div></div>
+        <select class="settings-select" id="priv-online">
+          <option value="everyone">Herkes</option>
+          <option value="friends">Arkadaşlar</option>
+          <option value="nobody">Kimse</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Okundu bilgisi</div><div class="settings-row-sub">Mavi ✓✓ göndermek ister misin?</div></div>
+        <select class="settings-select" id="priv-read-receipts">
+          <option value="everyone">Evet, herkese göster</option>
+          <option value="nobody">Hayır, gizle</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Profil fotoğrafı</div><div class="settings-row-sub">Profil fotoğrafını kimlere göstereyim?</div></div>
+        <select class="settings-select" id="priv-profile-photo">
+          <option value="everyone">Herkes</option>
+          <option value="friends">Arkadaşlar</option>
+          <option value="nobody">Kimse</option>
+        </select>
+      </div>
+      <div style="margin-top:8px;padding-top:8px;">
+        <div style="font-size:.8rem;font-weight:600;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">Gelişmiş Gizlilik</div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">Gruplar</div><div class="settings-row-sub">Seni gruplara kim ekleyebilsin?</div></div>
+          <select class="settings-select" id="priv-groups">
+            <option value="everyone">Herkes</option>
+            <option value="friends">Sadece arkadaşlar</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">Arama izni</div><div class="settings-row-sub">Seni kim arayabilsin?</div></div>
+          <select class="settings-select" id="priv-calls">
+            <option value="everyone">Herkes</option>
+            <option value="friends">Sadece arkadaşlar</option>
+            <option value="nobody">Kimse</option>
+          </select>
+        </div>
+      </div>
+      <button class="save-b" id="save-privacy-btn" style="margin-top:12px;">💾 Gizlilik Ayarlarını Kaydet</button>
+    </div>
+    <!-- MUSIC -->
+    <div class="settings-panel" id="stab-music">
+      <div class="music-player">
+        <div class="music-player-title">🧘 Meditasyon Müziği</div>
+        <div class="music-player-sub">Arka planda rahatlatıcı sesler çal</div>
+        <div class="music-btns">
+          <button class="music-btn" data-track="rain" onclick="playMeditationTrack('rain',this)">🌧 Yağmur</button>
+          <button class="music-btn" data-track="ocean" onclick="playMeditationTrack('ocean',this)">🌊 Okyanus</button>
+          <button class="music-btn" data-track="forest" onclick="playMeditationTrack('forest',this)">🌲 Orman</button>
+          <button class="music-btn" data-track="om" onclick="playMeditationTrack('om',this)">🕉 Om</button>
+          <button class="music-btn" data-track="528" onclick="playMeditationTrack('528',this)">✨ 528Hz</button>
+          <button class="music-btn" data-track="white" onclick="playMeditationTrack('white',this)">⬜ Beyaz Gürültü</button>
+          <button class="music-btn" id="music-stop-btn" onclick="stopMeditationMusic()" style="color:#f87171;border-color:#f87171;">⏹ Durdur</button>
+        </div>
+        <div class="music-vol-row">
+          <label>🔊 Ses Seviyesi</label>
+          <input type="range" id="music-volume" min="0" max="100" value="40" oninput="setMusicVolume(this.value)"/>
+          <span id="music-vol-val" style="font-size:.78rem;color:var(--text-muted);min-width:28px;">40%</span>
+        </div>
+      </div>
+      <div style="font-size:.8rem;color:var(--text-muted);line-height:1.6;">
+        💡 Müzik tarayıcı kapanana kadar çalmaya devam eder. Arama veya mesaj geldiğinde ses otomatik kısılır.
+      </div>
+    </div>
+    <!-- BLOCKED -->
+    <div class="settings-panel" id="stab-blocked">
+      <div id="blocked-list-container"><div style="text-align:center;color:var(--text-muted);padding:24px;">Yükleniyor...</div></div>
+    </div>
+    <!-- NOTIFICATIONS -->
+    <div class="settings-panel" id="stab-notifications">
+      <div class="settings-row">
+        <div><div class="settings-row-label">Mesaj bildirimleri</div><div class="settings-row-sub">Yeni mesajlarda bildirim al</div></div>
+        <label class="settings-toggle"><input type="checkbox" id="notif-messages" checked onchange="saveNotifSettings()"/><span class="settings-toggle-slider"></span></label>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Arama bildirimleri</div><div class="settings-row-sub">Gelen aramalarda bildirim al</div></div>
+        <label class="settings-toggle"><input type="checkbox" id="notif-calls" checked onchange="saveNotifSettings()"/><span class="settings-toggle-slider"></span></label>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Ses efektleri</div><div class="settings-row-sub">Mesaj gönderim sesleri</div></div>
+        <label class="settings-toggle"><input type="checkbox" id="notif-sounds" checked onchange="saveNotifSettings()"/><span class="settings-toggle-slider"></span></label>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Masaüstü bildirimleri</div><div class="settings-row-sub">Tarayıcı bildirimlerine izin ver</div></div>
+        <button class="save-b" id="req-notif-btn" style="padding:8px 14px;font-size:.82rem;width:auto;margin-top:0;" onclick="requestNotifications()">İzin İste</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NICKNAME MODAL -->
+<div id="nickname-modal" class="mo" style="display:none;">
+  <div class="mo-box" style="max-width:360px;">
+    <div class="mo-head"><h2>✏️ Takma Ad</h2><button class="mo-close" data-close="nickname-modal">✕</button></div>
+    <div class="mo-body">
+      <div class="fl">Arkadaşın için takma ad</div>
+      <input class="fi" id="nickname-input" type="text" maxlength="32" placeholder="Takma ad (boş bırakırsan silinir)"/>
+      <div style="font-size:.75rem;color:var(--text-muted);margin-top:6px;">Bu takma ad sadece sana görünür.</div>
+      <button class="save-b" id="save-nickname-btn" style="margin-top:14px;">Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <!-- IMAGE LIGHTBOX -->
 <div id="lightbox">
   <button id="lightbox-close">✕</button>
@@ -820,7 +1000,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg-main);
 let _actx=null,_ringIv=null;
 function actx(){if(!_actx)_actx=new(window.AudioContext||window.webkitAudioContext)();if(_actx.state==="suspended")_actx.resume();return _actx;}
 function playTone(freqs,dur=0.15,vol=0.18,type="sine",delay=0){try{const ctx=actx(),t=ctx.currentTime+delay;freqs.forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.value=f;o.connect(g);g.connect(ctx.destination);const at=t+i*0.09;g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(vol,at+0.01);g.gain.exponentialRampToValueAtTime(0.001,at+dur);o.start(at);o.stop(at+dur+0.01);});}catch(e){}}
-function playMsgSound(){playTone([880,1100],0.13,0.16);}
+function playMsgSound(){
+  try{const ns=JSON.parse(localStorage.getItem("chatapp_notif_settings")||"{}");if(ns.sounds===false)return;}catch(e){}
+  playTone([880,1100],0.13,0.16);
+}
 function startRing(){stopRing();function ring(){try{const ctx=actx();let t=ctx.currentTime+0.05;[[480,0.25],[440,0.25],[480,0.25],[440,0.25]].forEach(([f,d])=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type="square";o.frequency.value=f;o.connect(g);g.connect(ctx.destination);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.15,t+0.01);g.gain.linearRampToValueAtTime(0,t+d-0.02);o.start(t);o.stop(t+d);t+=d+0.04;});}catch(e){}}ring();_ringIv=setInterval(ring,2200);}
 function stopRing(){if(_ringIv){clearInterval(_ringIv);_ringIv=null;}}
 function playConnected(){playTone([660,880],0.22,0.14,"sine",0);}
@@ -885,8 +1068,18 @@ async function init(){
     if(!md||md.error){location.href="/login";return;}
     me=md;iceServers=id;
     applyTheme(localStorage.getItem("chatapp_theme")||"dark");
-    updateHeader();buildPickers();buildEmojiPicker();buildThemePicker();buildStatusEmojiPicker();loadStickers();
+    updateHeader();buildPickers();buildEmojiPicker();buildThemePicker();buildStatusEmojiPicker();loadStickers();loadNotifSettings();
     await loadFriends();await loadGroups();connectSocket();await requestNotifications();
+  // When user returns to visible tab, mark active chat as read
+  document.addEventListener("visibilitychange", () => {
+    if(!document.hidden && activeChat && !activeChat.isGroup && socket) {
+      if((unread[activeChat.id]||0) > 0) {
+        unread[activeChat.id] = 0;
+        updateBadge(activeChat.id);
+        socket.emit("mark_read", {from: activeChat.id});
+      }
+    }
+  });
   }catch(e){location.href="/login";}
 }
 
@@ -936,7 +1129,10 @@ function connectSocket(){
   socket.on("new_message",msg=>{
     lastMsg[msg.from_id]=msg;updatePreview(msg.from_id);
     if(activeChat?.id===msg.from_id&&!activeChat.isGroup){
-      appendMsg(msg,false);socket.emit("mark_read",{from:msg.from_id});
+      appendMsg(msg,false);
+      // Only mark as read if window is actually focused/visible (WhatsApp behavior)
+      if(!document.hidden){socket.emit("mark_read",{from:msg.from_id});}
+      else{unread[msg.from_id]=(unread[msg.from_id]||0)+1;updateBadge(msg.from_id);}
     } else {unread[msg.from_id]=(unread[msg.from_id]||0)+1;updateBadge(msg.from_id);playMsgSound();}
     if(activeChat?.id===msg.from_id) appendInCallMsg(msg,false);
     const f=friends.find(x=>x.id===msg.from_id);
@@ -957,6 +1153,11 @@ function connectSocket(){
     updateGroupPreview(msg.group_id,msg);
     if(activeChat?.id===msg.group_id&&activeChat.isGroup){appendGroupMsg(msg,msg.from_id===me.id);}
     else{unread["g:"+msg.group_id]=(unread["g:"+msg.group_id]||0)+1;updateBadge("g:"+msg.group_id);playMsgSound();}
+  });
+
+  socket.on("message_deleted",({msgId})=>{
+    const row=document.querySelector(`.mr[data-msg-id="${msgId}"]`);
+    if(row){row.style.transition="opacity .3s";row.style.opacity="0";setTimeout(()=>row.remove(),300);}
   });
 
   socket.on("typing",({from,isTyping})=>{if(activeChat?.id===from&&!activeChat.isGroup){const f=friends.find(x=>x.id===from);document.getElementById("typing-bar").textContent=isTyping?(f?.display_name||"")+" yazıyor...":""; }});
@@ -1017,8 +1218,9 @@ function renderCI(f,isGroup){
     const txt=lm.type==="sticker"?"🎭":lm.type==="image"?"📷 Fotoğraf":lm.type==="audio"?"🎙 Sesli mesaj":esc(lm.text||"");
     prevText=prefix+txt;
   }
+  const dispName = (!f.isGroup && f.nickname) ? f.nickname : f.display_name;
   el.innerHTML=`<div class="ci-av" style="background:${avBg(f)}" id="cav-${key}">${mkAv(f)}${isOn?'<div class="od"></div>':""}</div>
-  <div class="ci-info"><div class="ci-name">${esc(f.display_name)}${isGroup?'<span class="group-badge">Grup</span>':""}</div>
+  <div class="ci-info"><div class="ci-name">${esc(dispName)}${isGroup?'<span class="group-badge">Grup</span>':""}${!isGroup&&f.nickname?'<span class="nickname-tag">takma ad</span>':""}</div>
   <div class="ci-prev">${prevText}</div>${!isGroup&&(f.status_text||f.status_emoji)?`<div class="ci-status">${esc((f.status_emoji||"")+" "+(f.status_text||""))}</div>`:""}
   </div><div class="ci-meta"><span class="ci-time">${lm?fmtT(lm.time):""}</span>
   <span class="ci-badge" id="badge-${key}" style="display:${(unread[key]||0)>0?"flex":"none"}">${unread[key]||""}</span></div>`;
@@ -1086,7 +1288,7 @@ async function openChat(f){
   document.getElementById("ci-"+f.id)?.classList.add("on");
   const msgs=await api("GET","/api/messages/"+f.id);
   renderMessages(msgs,false);
-  socket.emit("mark_read",{from:f.id});
+  if(!document.hidden)socket.emit("mark_read",{from:f.id});
   closePickerPopups();closeChatSearch();
 }
 
@@ -1181,8 +1383,10 @@ function appendMsg(m,mine){
     if(m.read) tick=`<span class="read-tick" style="color:var(--accent)">✓✓</span>`;
     else tick=`<span class="unread-tick">✓</span>`;
   }
-  row.innerHTML=`<div class="bbl">${msgContent(m)}<div class="bt">${fmtT(m.time)}${tick}</div></div>`;
+  const ephLabel = m.ephemeral ? `<span class="eph-msg-timer" id="etimer-${m.id}">⏱ 10s</span>` : "";
+  row.innerHTML=`<div class="bbl">${msgContent(m)}<div class="bt">${fmtT(m.time)}${tick}${ephLabel}</div></div>`;
   box.appendChild(row);box.scrollTop=box.scrollHeight;
+  if(m.ephemeral) startEphTimer(m.id, m.expires_at);
 }
 
 function appendGroupMsg(m,mine){
@@ -1201,7 +1405,7 @@ function sendMsg(){
   const inp=document.getElementById("msg-input"),text=inp.value.trim();
   if(!text||!activeChat)return;
   if(activeChat.isGroup)socket.emit("send_group_message",{groupId:activeChat.id,text});
-  else socket.emit("send_message",{to:activeChat.id,text,type:"text"});
+  else socket.emit("send_message",{to:activeChat.id,text,type:"text",ephemeral:ephemeralMode});
   inp.value="";inp.style.height="auto";
   if(!activeChat.isGroup)socket.emit("typing",{to:activeChat.id,isTyping:false});
   else socket.emit("group_typing",{groupId:activeChat.id,isTyping:false});
@@ -1810,6 +2014,8 @@ function showPV(uid){
     ${songsHtml}
     <div class="pv-acts">
       <button class="pvb pri" onclick="openChat(friends.find(x=>x.id==='${f.id}'));document.getElementById('pv-modal').style.display='none'">💬 Mesaj</button>
+      <button class="pvb" style="background:var(--bg-input);color:var(--text-muted);" onclick="openNicknameModal('${f.id}')">✏️ Takma Ad</button>
+      <button class="pvb dan" onclick="blockUser('${f.id}')">🚫 Engelle</button>
       <button class="pvb dan" onclick="removeF('${f.id}')">🗑 Sil</button>
     </div>`;
   document.getElementById("pv-modal").style.display="flex";
@@ -1941,6 +2147,275 @@ document.getElementById("sc-photo-input").addEventListener("change",function(){
   reader.readAsDataURL(this.files[0]);
   this.value="";
 });
+
+// ══ SETTINGS ═══════════════════════════════════════════════
+document.getElementById("settings-btn").addEventListener("click", openSettings);
+
+function openSettings() {
+  loadPrivacySettings();
+  loadBlockedList();
+  loadNotifSettings();
+  document.getElementById("settings-modal").style.display = "flex";
+}
+
+// Settings tabs
+document.querySelectorAll(".settings-tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const tab = btn.dataset.stab;
+    document.querySelectorAll(".settings-tab").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".settings-panel").forEach(p => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("stab-" + tab).classList.add("active");
+    if(tab === "blocked") loadBlockedList();
+  });
+});
+
+function loadPrivacySettings() {
+  if(!me) return;
+  document.getElementById("priv-last-seen").value = me.privacy_last_seen || "everyone";
+  document.getElementById("priv-online").value = me.privacy_online || "everyone";
+  document.getElementById("priv-read-receipts").value = me.privacy_read_receipts || "everyone";
+  document.getElementById("priv-profile-photo").value = me.privacy_profile_photo || "everyone";
+}
+
+document.getElementById("save-privacy-btn").addEventListener("click", async () => {
+  const payload = {
+    ...me,
+    privacy_last_seen: document.getElementById("priv-last-seen").value,
+    privacy_online: document.getElementById("priv-online").value,
+    privacy_read_receipts: document.getElementById("priv-read-receipts").value,
+    privacy_profile_photo: document.getElementById("priv-profile-photo").value,
+  };
+  const updated = await api("PUT", "/api/me", payload);
+  me = updated;
+  const btn = document.getElementById("save-privacy-btn");
+  btn.textContent = "✅ Kaydedildi";
+  setTimeout(() => btn.textContent = "💾 Gizlilik Ayarlarını Kaydet", 2000);
+});
+
+// Blocked users
+async function loadBlockedList() {
+  const cont = document.getElementById("blocked-list-container");
+  const rows = await api("GET", "/api/blocked");
+  if(!rows.length){
+    cont.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:24px;">Engellenen kimse yok.</div>';
+    return;
+  }
+  cont.innerHTML = rows.map(u => `
+    <div class="blocked-item">
+      <div class="blocked-av" style="background:${avBg(u)}">${mkAv(u)}</div>
+      <span style="font-size:.9rem;">${esc(u.display_name)}</span>
+      <button class="unblock-btn" onclick="unblockUser('${u.id}')">Engeli Kaldır</button>
+    </div>
+  `).join("");
+}
+
+async function blockUser(uid) {
+  if(!confirm("Bu kişiyi engellemek istediğinize emin misiniz? Arkadaşlık listesinden çıkarılacak.")) return;
+  await api("POST", "/api/block/" + uid);
+  document.getElementById("pv-modal").style.display = "none";
+  await loadFriends();
+  if(activeChat?.id === uid) {
+    activeChat = null;
+    ["chat-header","messages","input-bar"].forEach(id => document.getElementById(id).style.display = "none");
+    document.getElementById("no-chat").style.display = "flex";
+    document.getElementById("sidebar").classList.remove("hidden");
+    document.getElementById("chat-panel").classList.remove("show");
+  }
+}
+async function unblockUser(uid) {
+  await api("DELETE", "/api/block/" + uid);
+  loadBlockedList();
+}
+
+// Notification settings
+function loadNotifSettings() {
+  const s = JSON.parse(localStorage.getItem("chatapp_notif_settings") || "{}");
+  document.getElementById("notif-messages").checked = s.messages !== false;
+  document.getElementById("notif-calls").checked = s.calls !== false;
+  document.getElementById("notif-sounds").checked = s.sounds !== false;
+}
+function saveNotifSettings() {
+  const s = {
+    messages: document.getElementById("notif-messages").checked,
+    calls: document.getElementById("notif-calls").checked,
+    sounds: document.getElementById("notif-sounds").checked,
+  };
+  localStorage.setItem("chatapp_notif_settings", JSON.stringify(s));
+}
+function notifEnabled(type) {
+  const s = JSON.parse(localStorage.getItem("chatapp_notif_settings") || "{}");
+  return s[type] !== false;
+}
+
+// ══ MEDITATION MUSIC (Web Audio API) ═══════════════════════
+let meditationAudioCtx = null;
+let meditationNodes = [];
+let meditationGain = null;
+let currentMeditationTrack = null;
+
+function getMeditationCtx() {
+  if(!meditationAudioCtx) meditationAudioCtx = new(window.AudioContext||window.webkitAudioContext)();
+  if(meditationAudioCtx.state === "suspended") meditationAudioCtx.resume();
+  return meditationAudioCtx;
+}
+
+function stopMeditationMusic() {
+  meditationNodes.forEach(n => { try { n.stop(); } catch(e){} });
+  meditationNodes = [];
+  currentMeditationTrack = null;
+  document.querySelectorAll(".music-btn").forEach(b => b.classList.remove("active"));
+}
+
+function setMusicVolume(val) {
+  document.getElementById("music-vol-val").textContent = val + "%";
+  if(meditationGain) meditationGain.gain.value = val / 100 * 0.8;
+}
+
+function playMeditationTrack(track, btn) {
+  if(currentMeditationTrack === track) { stopMeditationMusic(); return; }
+  stopMeditationMusic();
+  currentMeditationTrack = track;
+  document.querySelectorAll(".music-btn").forEach(b => b.classList.remove("active"));
+  if(btn) btn.classList.add("active");
+  const ctx = getMeditationCtx();
+  const vol = parseInt(document.getElementById("music-volume").value) / 100 * 0.8;
+  meditationGain = ctx.createGain();
+  meditationGain.gain.value = vol;
+  meditationGain.connect(ctx.destination);
+
+  if(track === "rain") {
+    // Pink-ish noise filtered to sound like rain
+    const bufSize = ctx.sampleRate * 2;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for(let i=0;i<bufSize;i++){
+      const w=Math.random()*2-1;
+      b0=.99886*b0+w*.0555179;b1=.99332*b1+w*.0750759;b2=.96900*b2+w*.1538520;
+      b3=.86650*b3+w*.3104856;b4=.55000*b4+w*.5329522;b5=-.7616*b5-w*.0168980;
+      data[i]=(b0+b1+b2+b3+b4+b5+b6+w*.5362)*0.11;b6=w*.115926;
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const filter = ctx.createBiquadFilter(); filter.type = "highpass"; filter.frequency.value = 600;
+    src.connect(filter); filter.connect(meditationGain); src.start();
+    meditationNodes.push(src);
+  } else if(track === "ocean") {
+    // Two detuned oscillators + white noise for waves
+    [0.08, 0.12, 0.19].forEach((freq, i) => {
+      const osc = ctx.createOscillator(); const g = ctx.createGain();
+      osc.type = "sine"; osc.frequency.value = freq;
+      g.gain.value = 0.3; osc.connect(g); g.connect(meditationGain);
+      osc.start(); meditationNodes.push(osc);
+    });
+    const bufSize = ctx.sampleRate * 4;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<bufSize;i++) d[i] = (Math.random()*2-1) * 0.04;
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 800;
+    src.connect(lp); lp.connect(meditationGain); src.start();
+    meditationNodes.push(src);
+  } else if(track === "forest") {
+    // Chirpy oscillators simulating birds + wind noise
+    const bufSize = ctx.sampleRate * 2;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<bufSize;i++) d[i] = (Math.random()*2-1)*0.05;
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const hp = ctx.createBiquadFilter(); hp.type = "bandpass"; hp.frequency.value = 1200; hp.Q.value = 0.5;
+    src.connect(hp); hp.connect(meditationGain); src.start(); meditationNodes.push(src);
+    // Bird chirp pattern
+    function chirp() {
+      if(currentMeditationTrack !== "forest") return;
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      const f = 1200 + Math.random()*1400;
+      o.type = "sine"; o.frequency.setValueAtTime(f, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(f*1.3, ctx.currentTime+0.08);
+      g.gain.setValueAtTime(0, ctx.currentTime); g.gain.linearRampToValueAtTime(0.15, ctx.currentTime+0.01);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.12);
+      o.connect(g); g.connect(meditationGain); o.start(); o.stop(ctx.currentTime+0.15);
+      setTimeout(chirp, 800 + Math.random()*2500);
+    }
+    setTimeout(chirp, 500);
+  } else if(track === "om") {
+    // 136.1 Hz (Earth frequency) + overtones
+    [136.1, 272.2, 408.3].forEach((f, i) => {
+      const osc = ctx.createOscillator(); const g = ctx.createGain();
+      osc.type = i === 0 ? "sine" : "sine"; osc.frequency.value = f;
+      g.gain.value = i === 0 ? 0.5 : 0.2 / (i+1);
+      osc.connect(g); g.connect(meditationGain); osc.start(); meditationNodes.push(osc);
+    });
+  } else if(track === "528") {
+    // 528 Hz "miracle tone" + binaural beat (528 + 532 Hz)
+    const osc1 = ctx.createOscillator(); const g1 = ctx.createGain();
+    osc1.type = "sine"; osc1.frequency.value = 528; g1.gain.value = 0.4;
+    osc1.connect(g1); g1.connect(meditationGain); osc1.start(); meditationNodes.push(osc1);
+    const osc2 = ctx.createOscillator(); const g2 = ctx.createGain();
+    osc2.type = "sine"; osc2.frequency.value = 532; g2.gain.value = 0.3;
+    osc2.connect(g2); g2.connect(meditationGain); osc2.start(); meditationNodes.push(osc2);
+  } else if(track === "white") {
+    const bufSize = ctx.sampleRate * 2;
+    const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i=0;i<bufSize;i++) d[i] = Math.random()*2-1;
+    const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 5000;
+    src.connect(lp); lp.connect(meditationGain); src.start(); meditationNodes.push(src);
+  }
+}
+
+// ══ NICKNAME ════════════════════════════════════════════════
+let nicknameTargetId = null;
+function openNicknameModal(uid) {
+  nicknameTargetId = uid;
+  const f = friends.find(x => x.id === uid);
+  document.getElementById("nickname-input").value = f?.nickname || "";
+  document.getElementById("pv-modal").style.display = "none";
+  document.getElementById("nickname-modal").style.display = "flex";
+}
+document.getElementById("save-nickname-btn").addEventListener("click", async () => {
+  if(!nicknameTargetId) return;
+  const nickname = document.getElementById("nickname-input").value.trim();
+  const res = await api("PUT", "/api/friends/" + nicknameTargetId + "/nickname", { nickname });
+  if(res.ok) {
+    const f = friends.find(x => x.id === nicknameTargetId);
+    if(f) f.nickname = res.nickname;
+    document.getElementById("nickname-modal").style.display = "none";
+    rebuildChatsList();
+    await loadFriends();
+  }
+});
+
+// ══ EPHEMERAL MESSAGES ══════════════════════════════════════
+let ephemeralMode = false;
+document.getElementById("ephemeral-btn").addEventListener("click", () => {
+  ephemeralMode = !ephemeralMode;
+  const btn = document.getElementById("ephemeral-btn");
+  btn.classList.toggle("active", ephemeralMode);
+  const inp = document.getElementById("msg-input");
+  inp.placeholder = ephemeralMode ? "⏱ Süreli mesaj (10s sonra silinir)..." : "Mesaj yaz...";
+});
+
+function startEphTimer(msgId, expiresAt) {
+  if(!expiresAt) return;
+  function tick() {
+    const remaining = Math.ceil((expiresAt - Date.now()) / 1000);
+    const el = document.getElementById("etimer-" + msgId);
+    if(!el) return;
+    if(remaining <= 0) {
+      const row = el.closest(".mr");
+      if(row) row.style.opacity = "0", setTimeout(() => row.remove(), 300);
+      return;
+    }
+    el.textContent = "⏱ " + remaining + "s";
+    setTimeout(tick, 500);
+  }
+  tick();
+}
+
+// Handle message_deleted event from socket
+// (added in connectSocket section below)
 
 // ══ PHONE AUTO-FORMAT ════════════════════════════════════
 function fmtPhoneInput(input){

@@ -160,6 +160,18 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_gm     ON group_members(user_id);
   CREATE INDEX IF NOT EXISTS idx_calls  ON call_history(from_id, to_id);
   CREATE INDEX IF NOT EXISTS idx_la     ON login_attempts(ip, time);
+  CREATE TABLE IF NOT EXISTS blocked_users (
+    blocker_id  TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    blocked_id  TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at  INTEGER,
+    PRIMARY KEY(blocker_id, blocked_id)
+  );
+  CREATE TABLE IF NOT EXISTS friend_nicknames (
+    owner_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    friend_id   TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    nickname    TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY(owner_id, friend_id)
+  );
 `);
 
 // Migrations for existing DBs
@@ -175,14 +187,25 @@ db.exec(`
   "banner_url TEXT DEFAULT NULL",
   "profile_views INTEGER DEFAULT 0",
 ].forEach(col => { try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(e){} });
-["group_id TEXT DEFAULT NULL","type TEXT DEFAULT 'text'","read_at INTEGER DEFAULT NULL"]
+["group_id TEXT DEFAULT NULL","type TEXT DEFAULT 'text'","read_at INTEGER DEFAULT NULL","ephemeral INTEGER DEFAULT 0","expires_at INTEGER DEFAULT NULL"]
   .forEach(col => { try { db.exec(`ALTER TABLE messages ADD COLUMN ${col}`); } catch(e){} });
+[
+  "privacy_last_seen TEXT DEFAULT 'everyone'",
+  "privacy_online TEXT DEFAULT 'everyone'",
+  "privacy_read_receipts TEXT DEFAULT 'everyone'",
+  "privacy_profile_photo TEXT DEFAULT 'everyone'",
+].forEach(col => { try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(e){} });
 try { db.exec(`CREATE TABLE IF NOT EXISTS login_attempts (ip TEXT NOT NULL, email TEXT NOT NULL, time INTEGER NOT NULL)`); } catch(e){}
 
 // Clean old login attempts periodically
 setInterval(() => {
   try { db.prepare("DELETE FROM login_attempts WHERE time < ?").run(Date.now() - 15*60*1000); } catch(e){}
 }, 5 * 60 * 1000);
+
+// Clean expired ephemeral messages periodically
+setInterval(() => {
+  try { db.prepare("DELETE FROM messages WHERE ephemeral=1 AND expires_at IS NOT NULL AND expires_at < ?").run(Date.now()); } catch(e){}
+}, 5000);
 
 // ── HELPERS ───────────────────────────────────────────────
 function genPhone() {
@@ -198,6 +221,11 @@ function randomColor() {
 function safeUser(u) {
   if (!u) return null;
   const { password, ...rest } = u;
+  // ensure privacy defaults
+  rest.privacy_last_seen = rest.privacy_last_seen || 'everyone';
+  rest.privacy_online = rest.privacy_online || 'everyone';
+  rest.privacy_read_receipts = rest.privacy_read_receipts || 'everyone';
+  rest.privacy_profile_photo = rest.privacy_profile_photo || 'everyone';
   return rest;
 }
 function sanitizeText(s, max = 5000) {
@@ -209,11 +237,16 @@ function getFriends(userId) {
     SELECT u.id, u.display_name, u.phone_number, u.avatar_color, u.avatar_emoji,
            u.avatar_url, u.bio, u.status_text, u.status_emoji, u.status_photo,
            u.bio_link, u.location_txt, u.fav_songs, u.banner_url, u.profile_views,
+           u.privacy_read_receipts, u.privacy_online,
+           COALESCE(n.nickname, '') as nickname,
            f.status, f.requester_id
     FROM friendships f
     JOIN users u ON (CASE WHEN f.requester_id=? THEN f.addressee_id ELSE f.requester_id END = u.id)
+    LEFT JOIN friend_nicknames n ON n.owner_id=? AND n.friend_id=u.id
     WHERE (f.requester_id=? OR f.addressee_id=?) AND f.status IN ('accepted','pending')
-  `).all(userId, userId, userId);
+    AND u.id NOT IN (SELECT blocked_id FROM blocked_users WHERE blocker_id=?)
+    AND u.id NOT IN (SELECT blocker_id FROM blocked_users WHERE blocked_id=?)
+  `).all(userId, userId, userId, userId, userId, userId);
 }
 function getUserGroups(userId) {
   return db.prepare(`
@@ -414,8 +447,10 @@ app.put("/api/me", requireAuth, (req, res) => {
   try { const arr = JSON.parse(req.body.fav_songs || "[]"); fav_songs = JSON.stringify(arr.slice(0,5).map(x=>String(x).slice(0,100))); } catch(e){}
 
   db.prepare(`UPDATE users SET display_name=?,bio=?,avatar_color=?,avatar_emoji=?,
-              status_text=?,status_emoji=?,bio_link=?,location_txt=?,fav_songs=? WHERE id=?`)
-    .run(display_name, bio, avatar_color, avatar_emoji, status_text, status_emoji, bio_link, location_txt, fav_songs, u.id);
+    status_text=?,status_emoji=?,bio_link=?,location_txt=?,fav_songs=?,
+    privacy_last_seen=?,privacy_online=?,privacy_read_receipts=?,privacy_profile_photo=? WHERE id=?`)
+    .run(display_name, bio, avatar_color, avatar_emoji, status_text, status_emoji, bio_link, location_txt, fav_songs,
+         privacy_last_seen, privacy_online, privacy_read_receipts, privacy_profile_photo, u.id);
   res.json(safeUser(db.prepare("SELECT * FROM users WHERE id=?").get(u.id)));
 });
 
@@ -638,6 +673,59 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Sunucu hatası." });
 });
 
+
+// ── BLOCK / UNBLOCK ────────────────────────────────────────
+app.post("/api/block/:userId", requireAuth, (req, res) => {
+  const targetId = req.params.userId;
+  if (targetId === req.session.userId) return res.status(400).json({ error: "Kendinizi engelleyemezsiniz." });
+  try {
+    db.prepare("INSERT OR IGNORE INTO blocked_users (blocker_id, blocked_id, created_at) VALUES (?,?,?)")
+      .run(req.session.userId, targetId, Date.now());
+    // Also remove friendship
+    db.prepare("DELETE FROM friendships WHERE (requester_id=? AND addressee_id=?) OR (requester_id=? AND addressee_id=?)")
+      .run(req.session.userId, targetId, targetId, req.session.userId);
+    res.json({ ok: true });
+  } catch(e) { res.status(500).json({ error: "Hata" }); }
+});
+app.delete("/api/block/:userId", requireAuth, (req, res) => {
+  db.prepare("DELETE FROM blocked_users WHERE blocker_id=? AND blocked_id=?")
+    .run(req.session.userId, req.params.userId);
+  res.json({ ok: true });
+});
+app.get("/api/blocked", requireAuth, (req, res) => {
+  const rows = db.prepare(`SELECT u.id, u.display_name, u.avatar_color, u.avatar_emoji, u.avatar_url
+    FROM blocked_users b JOIN users u ON u.id = b.blocked_id WHERE b.blocker_id=? ORDER BY b.created_at DESC`)
+    .all(req.session.userId);
+  res.json(rows);
+});
+
+// ── FRIEND NICKNAME ─────────────────────────────────────────
+app.put("/api/friends/:friendId/nickname", requireAuth, (req, res) => {
+  const friendId = req.params.friendId;
+  const nickname = sanitizeText(req.body.nickname || "", 32).trim();
+  const friendship = db.prepare(`SELECT id FROM friendships WHERE status='accepted' AND
+    ((requester_id=? AND addressee_id=?) OR (requester_id=? AND addressee_id=?))`)
+    .get(req.session.userId, friendId, friendId, req.session.userId);
+  if (!friendship) return res.status(403).json({ error: "Bu kişi arkadaşın değil." });
+  if (nickname) {
+    db.prepare("INSERT OR REPLACE INTO friend_nicknames (owner_id, friend_id, nickname) VALUES (?,?,?)")
+      .run(req.session.userId, friendId, nickname);
+  } else {
+    db.prepare("DELETE FROM friend_nicknames WHERE owner_id=? AND friend_id=?")
+      .run(req.session.userId, friendId);
+  }
+  res.json({ ok: true, nickname });
+});
+
+// ── EPHEMERAL MESSAGE DELETE ────────────────────────────────
+app.delete("/api/messages/ephemeral/:msgId", requireAuth, (req, res) => {
+  const msg = db.prepare("SELECT * FROM messages WHERE id=? AND ephemeral=1").get(req.params.msgId);
+  if (!msg) return res.status(404).json({ error: "Mesaj bulunamadı." });
+  if (msg.from_id !== req.session.userId && msg.to_id !== req.session.userId) return res.status(403).json({ error: "Yetki yok." });
+  db.prepare("DELETE FROM messages WHERE id=?").run(req.params.msgId);
+  res.json({ ok: true });
+});
+
 // ── SOCKET.IO ─────────────────────────────────────────────
 const io = new Server(server, {
   transports: ["websocket", "polling"],
@@ -673,7 +761,10 @@ io.on("connection", (socket) => {
 
   online.set(userId, socket.id);
   getUserGroups(userId).forEach(g => socket.join("group:" + g.id));
-  emitToFriends(userId, "friend_online", { id: userId });
+  const myOnlinePrivacy = db.prepare("SELECT privacy_online FROM users WHERE id=?").get(userId);
+  if (!myOnlinePrivacy || myOnlinePrivacy.privacy_online !== 'nobody') {
+    emitToFriends(userId, "friend_online", { id: userId });
+  }
   db.prepare("UPDATE users SET last_seen=? WHERE id=?").run(Date.now(), userId);
 
   socket.on("disconnect", () => {
@@ -692,7 +783,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("send_message", ({ to, text, type }) => {
+  socket.on("send_message", ({ to, text, type, ephemeral: req_ephemeral }) => {
     if (!socketRateLimit(userId)) return;
     const cleanText = sanitizeText(text || "", type === "image" || type === "audio" ? 512 : 5000);
     if (!cleanText) return;
@@ -701,12 +792,22 @@ io.on("connection", (socket) => {
       ((requester_id=? AND addressee_id=?) OR (requester_id=? AND addressee_id=?))
       AND status='accepted'`).get(userId, to, to, userId);
     if (!fs_) return;
+    const isEphemeral = req_ephemeral === true ? 1 : 0;
+    const expiresAt = isEphemeral ? Date.now() + 10000 : null;
     const msg = { id: uuid(), from_id: userId, to_id: to, group_id: null,
-      text: cleanText, type: msgType, time: Date.now(), read: 0, read_at: null };
-    db.prepare("INSERT INTO messages VALUES (?,?,?,?,?,?,?,?,?)")
-      .run(msg.id, msg.from_id, msg.to_id, msg.group_id, msg.text, msg.type, msg.time, msg.read, msg.read_at);
+      text: cleanText, type: msgType, time: Date.now(), read: 0, read_at: null,
+      ephemeral: isEphemeral, expires_at: expiresAt };
+    db.prepare("INSERT INTO messages VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+      .run(msg.id, msg.from_id, msg.to_id, msg.group_id, msg.text, msg.type, msg.time, msg.read, msg.read_at, msg.ephemeral, msg.expires_at);
     emitTo(to, "new_message", msg);
     socket.emit("message_sent", msg);
+    if (isEphemeral) {
+      setTimeout(() => {
+        try { db.prepare("DELETE FROM messages WHERE id=? AND ephemeral=1").run(msg.id); } catch(e) {}
+        emitTo(to, "message_deleted", { msgId: msg.id });
+        socket.emit("message_deleted", { msgId: msg.id });
+      }, 10000);
+    }
   });
 
   socket.on("send_group_message", ({ groupId, text, type }) => {
@@ -717,8 +818,8 @@ io.on("connection", (socket) => {
     if (!mem) return;
     const msg = { id: uuid(), from_id: userId, to_id: groupId, group_id: groupId,
       text: cleanText, type: ["text","image","audio","sticker"].includes(type)?type:"text", time: Date.now(), read: 0, read_at: null };
-    db.prepare("INSERT INTO messages VALUES (?,?,?,?,?,?,?,?,?)")
-      .run(msg.id, msg.from_id, msg.to_id, msg.group_id, msg.text, msg.type, msg.time, msg.read, msg.read_at);
+    db.prepare("INSERT INTO messages VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+      .run(msg.id, msg.from_id, msg.to_id, msg.group_id, msg.text, msg.type, msg.time, msg.read, msg.read_at, 0, null);
     io.to("group:" + groupId).emit("new_group_message", {
       ...msg,
       sender_name: user.display_name,
@@ -734,7 +835,13 @@ io.on("connection", (socket) => {
     const updated = db.prepare(`UPDATE messages SET read=1, read_at=?
       WHERE from_id=? AND to_id=? AND read=0 AND group_id IS NULL`)
       .run(now, from, userId);
-    if (updated.changes > 0) emitTo(from, "messages_read", { by: userId, at: now });
+    // Only emit read receipt if receiver's privacy setting allows it
+    if (updated.changes > 0) {
+      const myPrivacy = db.prepare("SELECT privacy_read_receipts FROM users WHERE id=?").get(userId);
+      if (!myPrivacy || myPrivacy.privacy_read_receipts !== 'nobody') {
+        emitTo(from, "messages_read", { by: userId, at: now });
+      }
+    }
   });
 
   socket.on("typing", ({ to, isTyping }) => {
